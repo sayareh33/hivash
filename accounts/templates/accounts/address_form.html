@@ -1,0 +1,13 @@
+{% extends '_base1.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% if object %}ویرایش{% else %}افزودن{% endif %} آدرس</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">ذخیره</button>
+        <a href="{% url 'accounts:my_account' %}" class="btn btn-secondary">انصراف</a>
+    </form>
+</div>
+{% endblock %}

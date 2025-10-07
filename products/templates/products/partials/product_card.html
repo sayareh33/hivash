@@ -1,0 +1,38 @@
+<div class="product-card">
+    <div class="product-image">
+        <a href="{{ product.get_absolute_url }}">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.title }}">
+            {% else %}
+                <img src="{% static 'img/products/default.jpg' %}" alt="بدون تصویر">
+            {% endif %}
+        </a>
+        {% if product.has_active_discount %}
+        <span class="product-badge">تخفیف ویژه</span>
+        {% endif %}
+    </div>
+    <div class="product-info">
+        <h3 class="product-title">
+            <a href="{{ product.get_absolute_url }}">{{ product.title }}</a>
+        </h3>
+        <p class="text-muted mb-2">{{ product.short_description|truncatechars:60 }}</p>
+        <div class="product-price mb-3">
+            {% if product.has_active_discount %}
+                <span class="text-danger">{{ product.get_final_price|intcomma }} تومان</span>
+                <small class="text-decoration-line-through text-muted ms-2">
+                    {{ product.unit_price|intcomma }} تومان
+                </small>
+            {% else %}
+                {{ product.unit_price|intcomma }} تومان
+            {% endif %}
+        </div>
+        <form action="{% url 'carts:add_to_cart' product.id %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="add-to-cart-btn">
+                <i class="bi bi-cart-plus me-2"></i>
+                افزودن به سبد
+            </button>
+        </form>
+    </div>
+</div>

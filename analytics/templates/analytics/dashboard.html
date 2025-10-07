@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}آمار بازدیدها{% endblock %}
+{% block content %}
+<div class="container py-5 text-center">
+  <h2 class="mb-4">📈 گزارش بازدیدها</h2>
+  <p>کل بازدیدها: <strong>{{ total_visits }}</strong></p>
+  <p>IP منحصربه‌فرد: <strong>{{ unique_ips }}</strong></p>
+  <canvas id="visitsChart" height="100"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const chartData = JSON.parse('{{ chart_data|safe|escapejs }}');
+new Chart(document.getElementById('visitsChart'), {
+  type: 'bar',
+  data: {
+    labels: Object.keys(chartData).reverse(),
+    datasets: [{
+      label: 'بازدیدهای روزانه',
+      data: Object.values(chartData).reverse(),
+      backgroundColor: 'rgba(0, 255, 127, 0.6)',
+      borderColor: '#00ff7f',
+      borderWidth: 2
+    }]
+  },
+  options: {
+    scales: { y: { beginAtZero: true } }
+  }
+});
+</script>
+{% endblock %}

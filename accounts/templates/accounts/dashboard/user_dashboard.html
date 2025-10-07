@@ -1,0 +1,44 @@
+{% extends 'accounts/dashboard/base_dashboard.html' %}
+{% load static %}
+{% block title %}
+User Dashboard
+{% endblock %}
+{% block main %}
+<div class="col-lg-12 grid-margin stretch-card">
+  <div class="card">
+    <div class="card-body">
+      <h4 class="card-title">Your Profile Information</h4>
+      </p>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th> Image </th>
+              <th> First name </th>
+              <th> LastName </th>
+              <th> UserNmae </th>
+              <th> BirthDate </th>
+              <th> Email </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="py-1">
+                <img src="{% if user.profile.avatar %}{{user.profile.avatar.url }}{% endif %}" alt="image">
+              </td>
+              <td> {{ user.first_name }} </td>
+              <td> {{ user.last_name }} </td>
+              <td> {{ user.username }} </td>
+              <td> {{ user.profile.birth_date }} </td>
+              <td> {{ user.email }} </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock main %}
+{% block header_refrences %}
+<link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+{% endblock %}

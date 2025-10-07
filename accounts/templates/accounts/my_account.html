@@ -1,0 +1,76 @@
+<!-- templates/accounts/my-account.html -->
+{% extends '_base1.html' %}
+{% load static i18n %}
+
+{% block content %}
+<div class="account-container">
+    <!-- بخش اطلاعات کاربر -->
+    <div class="account-section">
+        <h2>{% trans "Personal Information" %}</h2>
+        <div class="user-info">
+            {% if user.profile_image %}
+                <img src="{{ user.profile_image.url }}" alt="Profile Image" class="profile-image">
+            {% endif %}
+            <div>
+                <p><strong>{% trans "Name:" %}</strong> {{ user.get_full_name }}</p>
+                <p><strong>{% trans "Phone:" %}</strong> {{ user.phone_number }}</p>
+                {% if user.email %}
+                    <p><strong>{% trans "Email:" %}</strong> {{ user.email }}</p>
+                {% endif %}
+                {% if user.birth_date %}
+                    <p><strong>{% trans "Birth Date:" %}</strong> {{ user.birth_date }}</p>
+                {% endif %}
+                {% if user.gender %}
+                    <p><strong>{% trans "Gender:" %}</strong> {{ user.get_gender_display }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary">{% trans "Edit Profile" %}</a>
+    </div>
+
+<!-- در بخش آدرس‌ها -->
+<div class="account-section">
+    <h2>آدرس‌های من</h2>
+    {% for address in addresses %}
+        <div class="address-card {% if address.is_default %}default-address{% endif %}">
+            <h3>{{ address.title }}</h3>
+            <p>{{ address.receiver_name }}</p>
+            <p>{{ address.phone_number }}</p>
+            <p>{{ address.country.name }}, {{ address.province }}, {{ address.city }}</p>
+            <p>{{ address.address }}</p>
+            <p>{{ address.postal_code }}</p>
+            {% if address.is_default %}
+                <span class="badge bg-success">پیش‌فرض</span>
+            {% endif %}
+            <div class="address-actions">
+                <a href="{% url 'edit_address' address.id %}" class="btn btn-sm btn-outline-primary">ویرایش</a>
+                <a href="{% url 'delete_address' address.id %}" class="btn btn-sm btn-outline-danger">حذف</a>
+                {% if not address.is_default %}
+                    <form method="post" action="{% url 'set_default_address' address.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">تنظیم به عنوان پیش‌فرض</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <p>هنوز آدرسی ثبت نکرده‌اید.</p>
+    {% endfor %}
+    <a href="{% url 'accounts:add_address' %}" class="btn btn-primary">افزودن آدرس جدید</a>
+</div>
+
+    <!-- بخش اطلاعات تکمیلی پروفایل -->
+    {% if profile %}
+    <div class="account-section">
+        <h2>{% trans "Additional Information" %}</h2>
+        {% if profile.bio %}
+            <p><strong>{% trans "About Me:" %}</strong> {{ profile.bio }}</p>
+        {% endif %}
+        {% if profile.website %}
+            <p><strong>{% trans "Website:" %}</strong> <a href="{{ profile.website }}" target="_blank">{{ profile.website }}</a></p>
+        {% endif %}
+        <a href="{% url 'edit_profile' %}" class="btn btn-primary">{% trans "Edit Additional Info" %}</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

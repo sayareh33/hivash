@@ -1,0 +1,35 @@
+<!-- templates/registration/logout.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}خروج از سیستم - سامانه سفر۳۰{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white text-center py-4">
+                    <h3><i class="fas fa-sign-out-alt me-2"></i>خروج از سیستم</h3>
+                </div>
+                <div class="card-body p-5 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h4 class="text-dark mb-4">شما با موفقیت از سیستم خارج شدید</h4>
+                    <p class="text-muted mb-4">امیدواریم تجربه خوبی داشته‌اید. بازگشت شما را منتظریم!</p>
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'home' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-home me-2"></i>بازگشت به صفحه اصلی
+                        </a>
+                        <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>ورود مجدد
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

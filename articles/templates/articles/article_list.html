@@ -1,0 +1,18 @@
+{% extends '_base.html' %}
+{% block content %}
+<h1>مقالات</h1>
+<form method="get">
+  <input name="q" placeholder="جستجو..." value="{{ request.GET.q }}">
+  <button>جستجو</button>
+</form>
+<div class="articles-grid">
+  {% for article in object_list %}
+    {% include 'articles/includes/article_card.html' with article=article %}
+  {% empty %}
+    <p>مقاله‌ای یافت نشد.</p>
+  {% endfor %}
+</div>
+{% if is_paginated %}
+  <div class="pagination">صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,64 @@
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">ثبت‌نام</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- فیلد ایمیل -->
+                        <div class="form-group mb-3">
+                            <label for="{{ form.email.id_for_label }}">ایمیل</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.email.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- فیلد شماره همراه -->
+                        <div class="form-group mb-3">
+                            <label for="{{ form.phone.id_for_label }}">شماره همراه (اختیاری)</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.phone.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- فیلد رمز عبور -->
+                        <div class="form-group mb-3">
+                            <label for="{{ form.password1.id_for_label }}">رمز عبور</label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.password1.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- فیلد تکرار رمز عبور -->
+                        <div class="form-group mb-3">
+                            <label for="{{ form.password2.id_for_label }}">تکرار رمز عبور</label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.password2.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">ثبت‌نام</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

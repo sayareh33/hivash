@@ -1,0 +1,18 @@
+<div class="d-flex flex-row align-items-center gap-2 iran-phone-widget">
+    <select name="{{ widget.subwidgets.0.name }}" 
+            id="{{ widget.subwidgets.0.attrs.id }}" 
+            class="{{ widget.subwidgets.0.attrs.class }}">
+        {% for value, label in widget.choices %}
+        <option value="{{ value }}" {% if value == widget.initial %}selected{% endif %}>
+            {{ label }}
+        </option>
+        {% endfor %}
+    </select>
+    
+    <input type="tel" 
+           name="{{ widget.subwidgets.1.name }}" 
+           id="{{ widget.subwidgets.1.attrs.id }}" 
+           class="{{ widget.subwidgets.1.attrs.class }}"
+           placeholder="{{ widget.subwidgets.1.attrs.placeholder }}"
+           value="{{ widget.subwidgets.1.value|default_if_none:'' }}">
+</div>

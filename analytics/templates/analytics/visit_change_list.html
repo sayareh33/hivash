@@ -1,0 +1,103 @@
+{% extends 'admin/change_list.html' %}
+{% load static %}
+
+{% block content_title %}
+<h1>آمار بازدیدها</h1>
+{% endblock %}
+
+{% block content %}
+<div style="margin: 20px 0;">
+  <h3>📊 گزارش کلی</h3>
+  <p>تعداد کل بازدیدها: <strong>{{ total_visits }}</strong></p>
+  <p>تعداد IPهای منحصربه‌فرد: <strong>{{ unique_ips }}</strong></p>
+</div>
+
+<canvas id="visitsChart" width="600" height="200"></canvas>
+<hr>
+
+{{ block.super }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('visitsChart');
+  const chartData = JSON.parse('{{ chart_data|safe|escapejs }}');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: Object.keys(chartData).reverse(),
+      datasets: [{
+        label: 'تعداد بازدید روزانه',
+        data: Object.values(chartData).reverse(),
+        fill: true,
+        borderColor: '#00ff7f',
+        backgroundColor: 'rgba(255, 242, 0, 0.3)',
+        tension: 0.3
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { display: true }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+</script>
+{% endblock %}
+
+
+
+
+
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block content %}
+    <div style="margin-bottom: 30px;">
+        <h3>آمار بازدید سایت</h3>
+        <p>کل بازدیدها: {{ total_visits }} | IPهای یکتا: {{ unique_ips }}</p>
+        <canvas id="visitChart" width="600" height="200"></canvas>
+    </div>
+    {{ block.super }}
+{% endblock %}
+
+{% block extrahead %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('visitChart').getContext('2d');
+        const data = {
+            labels: {{ chart_data.keys|list }},
+            datasets: [{
+                label: 'بازدید روزانه',
+                data: {{ chart_data.values|list }},
+                backgroundColor: 'rgba(0, 128, 255, 0.2)',
+                borderColor: 'rgba(0, 128, 255, 1)',
+                borderWidth: 1,
+                tension: 0.4
+            }]
+        };
+
+        new Chart(ctx, {
+            type: 'line',
+            data: data,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        stepSize: 1
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

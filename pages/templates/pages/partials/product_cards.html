@@ -1,0 +1,51 @@
+{% comment %}
+این فایل partial برای نمایش کارت‌های محصولات است.
+استفاده: {% include "partials/product_cards.html" with products=foods_products %}
+{% endcomment %}
+
+<div class="row">
+    {% for product in products %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="product-card fade-in-up">
+            <div class="position-relative">
+                <a href="{{ product.get_absolute_url }}">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-img">
+                    {% else %}
+                    <img src="{% static 'img/products/default.jpg' %}" alt="بدون تصویر" class="product-img">
+                    {% endif %}
+                </a>
+                {% if product.discounts.exists %}
+                <span class="product-badge">ویژه</span>
+                {% endif %}
+            </div>
+            <div class="product-body">
+                <h4 class="product-title">
+                    <a href="{{ product.get_absolute_url }}">{{ product.title }}</a>
+                </h4>
+                {% if product.short_description %}
+                <p class="product-description">{{ product.short_description|truncatechars:60 }}</p>
+                {% endif %}
+                <p class="product-price">
+                    {% if product.discounts.exists %}
+                    <span class="text-danger">{{ product.get_discounted_price|intcomma:False }} تومان</span>
+                    <small class="text-decoration-line-through text-muted ms-2">{{ product.unit_price|intcomma:False }} تومان</small>
+                    {% else %}
+                    {{ product.unit_price|intcomma:False }} تومان
+                    {% endif %}
+                </p>
+                <form action="{% url 'carts:add_to_cart' product.id %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="btn btn-primary w-100">افزودن به سبد خرید</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <p class="text-muted">هیچ محصولی یافت نشد.</p>
+    </div>
+    {% endfor %}
+</div>
+

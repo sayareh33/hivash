@@ -1,0 +1,631 @@
+{% extends '_base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}پروفایل کاربری - {{ site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .profile-tabs {
+        border-bottom: 2px solid #e9ecef;
+        margin-bottom: 25px;
+    }
+
+    .profile-tabs .nav-link {
+        color: #6c757d;
+        font-weight: 500;
+        padding: 12px 25px;
+        border: none;
+        border-bottom: 3px solid transparent;
+    }
+
+    .profile-tabs .nav-link.active {
+        color: #4e73df;
+        border-bottom-color: #4e73df;
+        background: transparent;
+    }
+
+    .profile-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+        border: none;
+    }
+
+    .profile-card-header {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 600;
+        color: #4e73df;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .profile-card-body {
+        padding: 20px;
+    }
+
+    .order-history {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .order-item {
+        border-left: 3px solid #4e73df;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+
+    .order-status {
+        font-size: 0.85rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    .order-status-delivered {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .order-status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .order-status-canceled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border: 1px solid #e9ecef;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    @media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-tabs .nav-link {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <h2 class="mb-4">پروفایل کاربری</h2>
+
+    <ul class="nav nav-tabs profile-tabs" id="profileTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                <i class="fas fa-user me-2"></i>خلاصه حساب
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">
+                <i class="fas fa-shopping-bag me-2"></i>سفارشات من
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
+                <i class="fas fa-shield-alt me-2"></i>امنیت
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="profileTabsContent">
+        <!-- تب خلاصه حساب -->
+        <div class="tab-pane fade show active" id="overview" role="tabpanel">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="profile-card">
+                        <div class="profile-card-header">
+                            <i class="fas fa-user-circle me-2"></i>اطلاعات شخصی
+                        </div>
+                        <div class="profile-card-body">
+                            <div class="text-center mb-4">
+                                <div class="mb-3">
+                                    <i class="fas fa-user fa-3x text-primary"></i>
+                                </div>
+                                <h4>{{ user.get_full_name|default:user.username }}</h4>
+                                <p class="text-muted">عضو از {{ user.date_joined|date:"Y/m/d" }}</p>
+                            </div>
+
+                            <div class="info-grid">
+                                <div>
+                                    <small class="text-muted">نام کامل</small>
+                                    <p class="mb-2">{{ profile.get_full_name|default:"ثبت نشده" }}</p>
+                                </div>
+                                <div>
+                                    <small class="text-muted">ایمیل</small>
+                                    <p class="mb-2">{{ user.email|default:"ثبت نشده" }}</p>
+                                </div>
+                                <div>
+                                    <small class="text-muted">شماره تماس</small>
+                                    <p class="mb-2">{{ user.phone }}</p>
+                                </div>
+                                <div>
+                                    <small class="text-muted">تاریخ تولد</small>
+                                    <p class="mb-2">
+                                        {% if profile.birth_date %}
+                                            {{ profile.birth_date|date:"Y/m/d" }}
+                                        {% else %}
+                                            ثبت نشده
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit me-2"></i>ویرایش اطلاعات
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="profile-card">
+                        <div class="profile-card-header">
+                            <i class="fas fa-chart-line me-2"></i>آمار خرید
+                        </div>
+                        <div class="profile-card-body">
+                            <div class="stats-grid mb-4">
+                                <div class="stat-item">
+                                    <div class="stat-value text-primary">{{ total_orders }}</div>
+                                    <div class="stat-label">تعداد سفارشات</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value text-success">{{ completed_orders }}</div>
+                                    <div class="stat-label">سفارشات تکمیل شده</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value text-info">{{ total_spent|intcomma }}</div>
+                                    <div class="stat-label">تومان کل خریدها</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value text-warning">{{ avg_order_value|intcomma }}</div>
+                                    <div class="stat-label">میانگین ارزش سفارش</div>
+                                </div>
+                            </div>
+
+                            <div class="text-center">
+                                <a href="{% url 'products:product_list' %}" class="btn btn-primary me-2">
+                                    <i class="fas fa-shopping-cart me-2"></i> ادامه خرید
+                                </a>
+                                <a href="#orders" class="btn btn-outline-primary" onclick="switchTab('orders-tab')">
+                                    <i class="fas fa-list me-2"></i> مشاهده همه سفارشات
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-card">
+                        <div class="profile-card-header">
+                            <i class="fas fa-map-marker-alt me-2"></i>آخرین آدرس
+                        </div>
+                        <div class="profile-card-body">
+                            {% if profile.address %}
+                                <p>
+                                    {{ profile.address }}
+                                    {% if profile.postal_code %}
+                                        <br>کد پستی: {{ profile.postal_code }}
+                                    {% endif %}
+                                    {% if profile.city %}
+                                        <br>{{ profile.city }}{% if profile.province %}، {{ profile.province }}{% endif %}
+                                    {% endif %}
+                                    {% if profile.country %}
+                                        <br>{{ profile.country.name }}
+                                    {% endif %}
+                                </p>
+                                <a href="{% url 'accounts:profile_edit' %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit me-2"></i>ویرایش آدرس
+                                </a>
+                            {% else %}
+                                <p class="text-muted">هیچ آدرسی ثبت نشده است.</p>
+                                <a href="{% url 'accounts:profile_edit' %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus me-2"></i>افزودن آدرس
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <i class="fas fa-history me-2"></i>آخرین سفارشات
+                </div>
+                <div class="profile-card-body">
+                    {% if recent_orders %}
+                        <div class="order-history">
+                            {% for order in recent_orders %}
+                            <div class="order-item">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-1">سفارش #{{ order.id }}</h6>
+                                        <small class="text-muted">تاریخ: {{ order.created_at|date:"Y/m/d - H:i" }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge order-status order-status-{{ order.status }}">{{ order.get_status_display }}</span>
+                                        <div class="mt-1">
+                                            <strong>{{ order.total_amount|intcomma }} تومان</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small>تعداد کالا: {{ order.items.count }} قلم</small>
+                                    <div class="mt-1">
+                                        <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-sm btn-outline-primary me-2">
+                                            مشاهده جزئیات
+                                        </a>
+                                        {% if order.status == 'delivered' %}
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            درخواست مرجوعی
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="#orders" class="btn btn-primary" onclick="switchTab('orders-tab')">
+                                مشاهده همه سفارشات
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">هنوز هیچ سفارشی ثبت نکرده‌اید.</p>
+                            <a href="{% url 'products:product_list' %}" class="btn btn-primary">
+                                <i class="fas fa-shopping-cart me-2"></i>مشاهده محصولات
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- تب سفارشات -->
+        <div class="tab-pane fade" id="orders" role="tabpanel">
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <i class="fas fa-shopping-bag me-2"></i>تاریخچه سفارشات
+                </div>
+                <div class="profile-card-body">
+                    {% if orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>شماره سفارش</th>
+                                    <th>تاریخ</th>
+                                    <th>مبلغ</th>
+                                    <th>وضعیت</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                <tr>
+                                    <td>#{{ order.id }}</td>
+                                    <td>{{ order.created_at|date:"Y/m/d" }}</td>
+                                    <td>{{ order.total_amount|intcomma }} تومان</td>
+                                    <td>
+                                        <span class="badge order-status order-status-{{ order.status }}">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                            جزئیات
+                                        </a>
+                                        {% if order.status == 'delivered' %}
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            مرجوعی
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- صفحه‌بندی -->
+                    {% if orders.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if orders.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ orders.previous_page_number }}&tab=orders" tabindex="-1">قبلی</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">قبلی</span>
+                            </li>
+                            {% endif %}
+
+                            {% for i in orders.paginator.page_range %}
+                            <li class="page-item {% if orders.number == i %}active{% endif %}">
+                                <a class="page-link" href="?page={{ i }}&tab=orders">{{ i }}</a>
+                            </li>
+                            {% endfor %}
+
+                            {% if orders.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ orders.next_page_number }}&tab=orders">بعدی</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">بعدی</span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">هنوز هیچ سفارشی ثبت نکرده‌اید.</p>
+                        <a href="{% url 'products:product_list' %}" class="btn btn-primary">
+                            <i class="fas fa-shopping-cart me-2"></i>مشاهده محصولات
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- تب امنیت -->
+        <div class="tab-pane fade" id="security" role="tabpanel">
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <i class="fas fa-lock me-2"></i>تنظیمات امنیتی
+                </div>
+                <div class="profile-card-body">
+                    <div class="mb-4">
+                        <h6 class="mb-3">تغییر رمز عبور</h6>
+                        <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-key me-2"></i>تغییر رمز عبور
+                        </a>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="mb-3">احراز هویت دو مرحله‌ای</h6>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="twoFactorAuth">
+                            <label class="form-check-label" for="twoFactorAuth">
+                                فعال سازی احراز هویت دو مرحله‌ای
+                            </label>
+                        </div>
+                        <small class="text-muted">با فعال کردن این قابلیت، هنگام ورود به حساب کدی به تلفن همراه شما ارسال خواهد شد.</small>
+                    </div>
+
+                    <div>
+                        <h6 class="mb-3">دستگاه‌های متصل</h6>
+                        <div class="border rounded p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">مرورگر Chrome</h6>
+                                    <small class="text-muted">دسکتاپ - تهران - اکنون فعال</small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger">خروج از دستگاه</button>
+                            </div>
+                        </div>
+
+                        <div class="border rounded p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">Safari</h6>
+                                    <small class="text-muted">iPhone - تهران - 2 روز پیش</small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger">خروج از دستگاه</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <i class="fas fa-trash-alt me-2"></i>حذف حساب کاربری
+                </div>
+                <div class="profile-card-body">
+                    <p class="text-muted">با حذف حساب کاربری، تمام اطلاعات شخصی، تاریخچه سفارشات و سایر داده‌های مرتبط با حساب شما به طور کامل حذف خواهند شد.</p>
+                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                        <i class="fas fa-trash-alt me-2"></i>درخواست حذف حساب
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مودال حذف حساب کاربری -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">حذف حساب کاربری</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>آیا از حذف حساب کاربری خود اطمینان دارید؟ این عمل غیرقابل برگشت است.</p>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmDelete">
+                    <label class="form-check-label" for="confirmDelete">
+                        با عواقب حذف حساب کاربری آشنا هستم و موافقم
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-danger" disabled>حذف دائم حساب</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // فعال کردن دکمه حذف حساب هنگام تایید
+    document.getElementById('confirmDelete').addEventListener('change', function() {
+        document.querySelector('#deleteAccountModal .btn-danger').disabled = !this.checked;
+    });
+
+    // مدیریت تب‌ها و ذخیره وضعیت در URL
+    document.addEventListener('DOMContentLoaded', function() {
+        // بازیابی تب فعال از URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab');
+
+        if (activeTab) {
+            const tabElement = document.querySelector(`#${activeTab}-tab`);
+            if (tabElement) {
+                new bootstrap.Tab(tabElement).show();
+            }
+        }
+
+        const profileTabs = document.querySelectorAll('#profileTabs button[data-bs-toggle="tab"]');
+
+        profileTabs.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(event) {
+                const target = event.target.getAttribute('id').replace('-tab', '');
+                const url = new URL(window.location);
+                url.searchParams.set('tab', target);
+                window.history.replaceState({}, '', url);
+            });
+        });
+    });
+
+    // تابع برای تغییر تب از طریق جاوااسکریپت
+    function switchTab(tabId) {
+        const tabElement = document.querySelector(`#${tabId}`);
+        if (tabElement) {
+            new bootstrap.Tab(tabElement).show();
+        }
+    }
+</script>
+<!-- بخش نمایش سفارشات در profile.html -->
+<div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
+    <h4>سفارشات من</h4>
+
+    {% if orders %}
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>شماره سفارش</th>
+                        <th>تاریخ</th>
+                        <th>وضعیت</th>
+                        <th>مبلغ کل</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.date_created|date:"Y/m/d" }}</td>
+                        <td>
+                            <span class="badge
+                                {% if order.status == 'ORDER_STATUS_PAID' %}bg-success
+                                {% elif order.status == 'ORDER_STATUS_UNPAID' %}bg-warning
+                                {% else %}bg-danger{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                           {% with order_total=request.cart.get_total_price %}
+    <!-- نمایش مجموع قیمت -->
+    {{ order_total }}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-sm btn-info">
+                                مشاهده جزئیات
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- صفحه‌بندی -->
+        {% if orders.has_other_pages %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if orders.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ orders.previous_page_number }}">قبلی</a>
+                </li>
+                {% endif %}
+
+                {% for num in orders.paginator.page_range %}
+                <li class="page-item {% if orders.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+
+                {% if orders.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ orders.next_page_number }}">بعدی</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info">
+            هنوز هیچ سفارشی ثبت نکرده‌اید.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

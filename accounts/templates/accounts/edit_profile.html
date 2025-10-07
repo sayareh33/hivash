@@ -1,0 +1,348 @@
+{% extends '_base1.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-lg">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h4 mb-0"><i class="fas fa-user-edit me-2"></i>ویرایش پروفایل کاربری</h2>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.errors or profile_form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>خطا!</strong> لطفاً موارد زیر را بررسی کنید:
+                            <ul class="mb-0">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for field in profile_form %}
+                                    {% for error in field.errors %}
+                                        <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row g-4">
+                            <!-- بخش اطلاعات اصلی -->
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <h4 class="h5 border-bottom pb-2 mb-3"><i class="fas fa-id-card me-2"></i>اطلاعات اصلی</h4>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ form.username.id_for_label }}" class="form-label">نام کاربری</label>
+                                        {% render_field form.username class="form-control" placeholder="نام کاربری خود را وارد کنید" %}
+                                        <small class="form-text text-muted">نام کاربری شما برای ورود به سیستم استفاده می‌شود.</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ form.email.id_for_label }}" class="form-label">ایمیل</label>
+                                        {% render_field form.email class="form-control" placeholder="example@domain.com" %}
+                                        <small class="form-text text-muted">ایمیل شما برای ارتباط با شما استفاده می‌شود.</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ form.first_name.id_for_label }}" class="form-label">نام</label>
+                                        {% render_field form.first_name class="form-control" placeholder="نام خود را وارد کنید" %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ form.last_name.id_for_label }}" class="form-label">نام خانوادگی</label>
+                                        {% render_field form.last_name class="form-control" placeholder="نام خانوادگی خود را وارد کنید" %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- بخش اطلاعات تکمیلی -->
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <h4 class="h5 border-bottom pb-2 mb-3"><i class="fas fa-info-circle me-2"></i>اطلاعات تکمیلی</h4>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ profile_form.phone.id_for_label }}" class="form-label">تلفن همراه</label>
+                                        {% render_field profile_form.phone class="form-control" placeholder="09xxxxxxxxx" %}
+                                        <small class="form-text text-muted">شماره تلفن همراه معتبر با پیش‌شماره 09</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ profile_form.birth_date.id_for_label }}" class="form-label">تاریخ تولد</label>
+                                        {% render_field profile_form.birth_date class="form-control" type="date" %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ profile_form.gender.id_for_label }}" class="form-label">جنسیت</label>
+                                        {% render_field profile_form.gender class="form-select" %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ profile_form.avatar.id_for_label }}" class="form-label">تصویر پروفایل</label>
+                                        {% render_field profile_form.avatar class="form-control" %}
+                                        {% if profile_form.instance.avatar %}
+                                            <div class="mt-2">
+                                                <img src="{{ profile_form.instance.avatar.url }}" alt="تصویر فعلی" class="img-thumbnail" width="100">
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="checkbox" name="avatar-clear" id="avatar-clear">
+                                                    <label class="form-check-label" for="avatar-clear">حذف تصویر فعلی</label>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-save me-2"></i>ذخیره تغییرات
+                            </button>
+                            <a href="{% url 'accounts:my_account' %}" class="btn btn-outline-secondary px-4">
+                                <i class="fas fa-times me-2"></i>انصراف
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- بخش تغییر رمز عبور -->
+            <div class="card shadow-sm border-0 rounded-lg mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="h5 mb-0"><i class="fas fa-key me-2"></i>تغییر رمز عبور</h3>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">برای تغییر رمز عبور خود از لینک زیر استفاده کنید:</p>
+                    <a href="{% url 'accounts:password_change' %}" class="btn btn-warning">
+                        <i class="fas fa-lock me-2"></i>تغییر رمز عبور
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+    }
+    .card {
+        transition: transform 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    .form-label {
+        font-weight: 600;
+    }
+</style>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-3">
+            {% include 'accounts/includes/profile_sidebar.html' %}
+        </div>
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">{{ page_title }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.first_name.id_for_label }}">نام</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.first_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.last_name.id_for_label }}">نام خانوادگی</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.last_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.email.id_for_label }}">ایمیل</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.birth_date.id_for_label }}">تاریخ تولد</label>
+                            {{ form.birth_date }}
+                            {% if form.birth_date.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.birth_date.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.avatar.id_for_label }}">تصویر پروفایل</label>
+                            {% if profile.avatar %}
+                                <div class="mb-2">
+                                    <img src="{{ profile.avatar.url }}" alt="تصویر پروفایل" class="img-thumbnail" width="100">
+                                </div>
+                            {% endif %}
+                            {{ form.avatar }}
+                            {% if form.avatar.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.avatar.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.country.id_for_label }}">کشور</label>
+                            {{ form.country }}
+                            {% if form.country.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.country.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.province.id_for_label }}">استان</label>
+                                    {{ form.province }}
+                                    {% if form.province.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.province.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.city.id_for_label }}">شهر</label>
+                                    {{ form.city }}
+                                    {% if form.city.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.city.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.address.id_for_label }}">آدرس</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.address.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.postal_code.id_for_label }}">کد پستی</label>
+                            {{ form.postal_code }}
+                            {% if form.postal_code.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.postal_code.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.emergency_contact.id_for_label }}">تماس اضطراری</label>
+                            {{ form.emergency_contact }}
+                            {% if form.emergency_contact.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.emergency_contact.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-check mb-3">
+                            {{ form.email_notifications }}
+                            <label class="form-check-label" for="{{ form.email_notifications.id_for_label }}">
+                                دریافت اعلان‌های ایمیلی
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            {{ form.sms_notifications }}
+                            <label class="form-check-label" for="{{ form.sms_notifications.id_for_label }}">
+                                دریافت اعلان‌های پیامکی
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
+                        <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">انصراف</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

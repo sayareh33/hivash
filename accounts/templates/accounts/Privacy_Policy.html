@@ -1,0 +1,81 @@
+<!-- accounts/templates/accounts/privacy_policy.html -->
+{% extends "_base1.html" %}
+{% load i18n %}
+
+{% block title %}سیاست حریم خصوصی - {{ company_name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">سیاست حریم خصوصی</h2>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <p class="text-muted">
+                            <small>آخرین به‌روزرسانی: {{ last_updated }}</small>
+                        </p>
+                    </div>
+
+                    <section class="mb-5">
+                        <h3 class="border-bottom pb-2">۱. اطلاعاتی که جمع‌آوری می‌کنیم</h3>
+                        <ul>
+                            <li>اطلاعات تماس (شماره موبایل، ایمیل)</li>
+                            <li>اطلاعات پروفایل (نام، تصویر، اطلاعات تماس)</li>
+                            <li>اطلاعات استفاده از سرویس (لاگ‌های دسترسی)</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h3 class="border-bottom pb-2">۲. نحوه استفاده از اطلاعات</h3>
+                        <p>ما از اطلاعات شما برای این اهداف استفاده می‌کنیم:</p>
+                        <ul>
+                            <li>ارائه و بهبود سرویس‌ها</li>
+                            <li>ارتباط با کاربران</li>
+                            <li>تحلیل و آنالیز استفاده از سرویس</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h3 class="border-bottom pb-2">۳. اشتراک‌گذاری اطلاعات</h3>
+                        <p>ما اطلاعات شما را با این موارد به اشتراک می‌گذاریم:</p>
+                        <ul>
+                            <li>تأمین‌کنندگان خدمات (ارسال SMS، پرداخت)</li>
+                            <li>مطابق با قوانین و مقررات</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h3 class="border-bottom pb-2">۴. امنیت اطلاعات</h3>
+                        <p>ما از این روش‌ها برای حفاظت از اطلاعات شما استفاده می‌کنیم:</p>
+                        <ul>
+                            <li>رمزنگاری داده‌ها</li>
+                            <li>کنترل‌های دسترسی سخت‌گیرانه</li>
+                            <li>بازرسی‌های دوره‌ای امنیتی</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h3 class="border-bottom pb-2">۵. حقوق کاربران</h3>
+                        <p>شما این حق را دارید که:</p>
+                        <ul>
+                            <li>به اطلاعات خود دسترسی داشته باشید</li>
+                            <li>درخواست اصلاح اطلاعات دهید</li>
+                            <li>درخواست حذف حساب کاربری دهید</li>
+                        </ul>
+                    </section>
+
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        برای سوالات بیشتر می‌توانید با آدرس 
+                        <a href="mailto:{{ contact_email }}">{{ contact_email }}</a> 
+                        تماس بگیرید.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

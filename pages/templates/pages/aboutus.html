@@ -1,0 +1,532 @@
+{% extends '_base.html' %}
+{% load static %}
+{% load i18n %}
+
+
+
+{% block extra_css %}
+<style>
+    /* استایل‌های اختصاصی صفحه درباره ما */
+    .about-hero {
+        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{% static "img/about-bg.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        height: 60vh;
+        display: flex;
+        align-items: center;
+        color: white;
+        text-align: center;
+        position: relative;
+    }
+
+    .about-hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .about-hero h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .about-hero p {
+        font-size: 1.2rem;
+        max-width: 700px;
+        margin: 0 auto 2rem;
+    }
+
+    .section-title {
+        position: relative;
+        margin-bottom: 3rem;
+        text-align: center;
+    }
+
+    .section-title h2 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        display: inline-block;
+        padding-bottom: 15px;
+    }
+
+    .section-title h2:after {
+        content: '';
+        position: absolute;
+        width: 80px;
+        height: 3px;
+        background: var(--secondary-color);
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .about-story {
+        padding: 80px 0;
+        background-color: #fff;
+    }
+
+    .story-content {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+    }
+
+    .story-text {
+        flex: 1;
+    }
+
+    .story-image {
+        flex: 1;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .story-image img {
+        width: 100%;
+        height: auto;
+        transition: transform 0.5s;
+    }
+
+    .story-image:hover img {
+        transform: scale(1.05);
+    }
+
+    .values-section {
+        padding: 80px 0;
+        background-color: var(--light-bg);
+    }
+
+    .value-card {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        text-align: center;
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+    }
+
+    .value-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .value-icon {
+        font-size: 3rem;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+    }
+
+    .value-card h3 {
+        color: var(--primary-dark);
+        margin-bottom: 15px;
+    }
+
+    .charity-section {
+        padding: 80px 0;
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('{% static "img/charity-bg.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: white;
+        text-align: center;
+    }
+
+    .charity-logo {
+        max-width: 200px;
+        margin-bottom: 30px;
+    }
+
+    .charity-content {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .gallery-section {
+        padding: 80px 0;
+        background-color: #fff;
+    }
+
+    .gallery-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 40px;
+    }
+
+    .gallery-item {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        height: 250px;
+    }
+
+    .gallery-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+    }
+
+    .gallery-item:hover img {
+        transform: scale(1.1);
+    }
+
+    .gallery-caption {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 15px;
+        transform: translateY(100%);
+        transition: transform 0.3s;
+    }
+
+    .gallery-item:hover .gallery-caption {
+        transform: translateY(0);
+    }
+
+    .video-section {
+        padding: 80px 0;
+        background-color: var(--light-bg);
+    }
+
+    .video-container {
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        height: 0;
+        overflow: hidden;
+        border-radius: 10px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    .team-section {
+        padding: 80px 0;
+        background-color: #fff;
+    }
+
+    .team-card {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .team-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .team-img {
+        height: 300px;
+        object-fit: cover;
+    }
+
+    .team-info {
+        padding: 20px;
+        text-align: center;
+    }
+
+    .team-info h4 {
+        color: var(--primary-dark);
+        margin-bottom: 5px;
+    }
+
+    .team-info p {
+        color: var(--secondary-dark);
+        font-weight: 500;
+    }
+
+    .cta-section {
+        padding: 80px 0;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        text-align: center;
+    }
+
+    .cta-btn {
+        background: white;
+        color: var(--primary-dark);
+        font-weight: 600;
+        padding: 12px 30px;
+        border-radius: 50px;
+        display: inline-block;
+        margin-top: 20px;
+        transition: all 0.3s;
+    }
+
+    .cta-btn:hover {
+        background: var(--secondary-dark);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .story-content {
+            flex-direction: column;
+        }
+
+        .about-hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .section-title h2 {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- بخش هیرو -->
+<section class="about-hero">
+    <div class="container">
+        <div class="about-hero-content">
+            <h1>داستان ما، ارزش‌های ما</h1>
+            <p>از مزرعه تا خانه شما، بدون واسطه و با کیفیت بی‌نظیر</p>
+            <a href="#our-story" class="btn btn-warning btn-lg">کشف داستان ما</a>
+        </div>
+    </div>
+</section>
+
+<!-- بخش داستان ما -->
+<section id="our-story" class="about-story">
+    <div class="container">
+        <div class="section-title">
+            <h2>داستان ما</h2>
+        </div>
+        <div class="story-content">
+            <div class="story-text">
+                <p>در سال ۱۳۹۵، با یک ایده ساده اما قدرتمند متولد شدیم: ارائه محصولات باکیفیت غذایی و چرمی مستقیماً از تولیدکننده به مصرف‌کننده. ما معتقدیم که حذف واسطه‌ها نه تنها قیمت‌ها را منصفانه‌تر می‌کند، بلکه کیفیت محصولات را نیز تضمین می‌نماید.</p>
+                <p>امروز با افتخار می‌گوییم که به یکی از معتبرترین تولیدکنندگان مواد غذایی و محصولات چرمی در منطقه تبدیل شده‌ایم. تمام محصولات ما با استانداردهای بین‌المللی تولید می‌شوند و تحت نظارت دقیق کیفیت قرار دارند.</p>
+                <p>اعتماد شما سرمایه ماست و ما هر روز برای حفظ این اعتماد تلاش می‌کنیم.</p>
+            </div>
+            <div class="story-image">
+                <img src="{% static 'img/about-story.jpg' %}" alt="تیم تولیدی ما" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- بخش ارزش‌ها -->
+<section class="values-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>ارزش‌های ما</h2>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h3>کیفیت بی‌نظیر</h3>
+                    <p>استفاده از بهترین مواد اولیه و فرآیندهای تولید استاندارد برای ارائه محصولاتی که به آنها افتخار می‌کنیم.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-hand-holding-heart"></i>
+                    </div>
+                    <h3>حذف واسطه‌ها</h3>
+                    <p>ارتباط مستقیم با تولیدکنندگان و عرضه محصولات با قیمت‌های منصفانه‌تر به مشتریان.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h3>مسئولیت اجتماعی</h3>
+                    <p>تعهد به جامعه و محیط زیست از طریق برنامه‌های خیریه و شیوه‌های تولید پایدار.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- بخش خیریه -->
+<section class="charity-section">
+    <div class="container">
+        <img src="{% static 'img/charity-logo.png' %}" alt="برند خیریه" class="charity-logo">
+        <div class="section-title">
+            <h2 style="color: white;">بخش خیریه ما</h2>
+        </div>
+        <div class="charity-content">
+            <p>برند خیریه ما با نام "دست‌های مهربان" به صورت مستقل از فروشگاه فعالیت می‌کند و مأموریت آن مشارکت در پروژه‌های درمانی و عمرانی در مناطق محروم است.</p>
+            <p>تاکنون در ساخت ۳ مدرسه، درمانگاه و کمک به درمان ده‌ها بیمار نیازمند مشارکت داشته‌ایم. ما معتقدیم که رشد کسب‌وکار باید همراه با مسئولیت‌پذیری اجتماعی باشد.</p>
+{#            <a href="{% url 'charity:charity' %}" class="btn btn-light mt-3">اطلاعات بیشتر درباره خیریه</a>#}
+        </div>
+    </div>
+</section>
+
+<!-- بخش گالری -->
+<section class="gallery-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>گالری تصاویر</h2>
+        </div>
+        <div class="gallery-container">
+            <div class="gallery-item">
+                <img src="{% static 'img/gallery-1.jpg' %}" alt="کارگاه تولیدی">
+                <div class="gallery-caption">
+                    <h5>کارگاه تولید مواد غذایی</h5>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="{% static 'img/gallery-2.jpg' %}" alt="محصولات چرمی">
+                <div class="gallery-caption">
+                    <h5>محصولات چرمی دست‌ساز</h5>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="{% static 'img/gallery-3.jpg' %}" alt="فعالیت خیریه">
+                <div class="gallery-caption">
+                    <h5>فعالیت‌های خیریه ما</h5>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="{% static 'img/gallery-4.jpg' %}" alt="تیم ما">
+                <div class="gallery-caption">
+                    <h5>تیم متخصص ما</h5>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="{% static 'img/gallery-5.jpg' %}" alt="محصولات غذایی">
+                <div class="gallery-caption">
+                    <h5>محصولات غذایی ارگانیک</h5>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="{% static 'img/gallery-6.jpg' %}" alt="مزارع اختصاصی">
+                <div class="gallery-caption">
+                    <h5>مزارع اختصاصی ما</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- بخش ویدیو -->
+<section class="video-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>نگاهی به پشت صحنه</h2>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/VIDEO_ID" allowfullscreen></iframe>
+                </div>
+                <p class="text-center mt-4">فیلمی از فرآیند تولید و بسته‌بندی محصولات ما</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- بخش تیم -->
+<section class="team-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>تیم ما</h2>
+        </div>
+        <div class="row">
+            <div class="col-md-3 col-sm-6">
+                <div class="team-card">
+                    <img src="{% static 'img/team-1.jpg' %}" alt="مدیرعامل" class="team-img">
+                    <div class="team-info">
+                        <h4>محمد رضایی</h4>
+                        <p>مدیرعامل و مؤسس</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="team-card">
+                    <img src="{% static 'img/team-2.jpg' %}" alt="مدیر تولید" class="team-img">
+                    <div class="team-info">
+                        <h4>فاطمه محمدی</h4>
+                        <p>مدیر کنترل کیفیت</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="team-card">
+                    <img src="{% static 'img/team-3.jpg' %}" alt="مدیر مالی" class="team-img">
+                    <div class="team-info">
+                        <h4>علی حسینی</h4>
+                        <p>مدیر مالی</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="team-card">
+                    <img src="{% static 'img/team-4.jpg' %}" alt="مدیر خیریه" class="team-img">
+                    <div class="team-info">
+                        <h4>زهرا کریمی</h4>
+                        <p>مدیر بخش خیریه</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- بخش CTA -->
+<section class="cta-section">
+    <div class="container">
+        <h2>آماده تجربه کیفیت واقعی هستید؟</h2>
+        <p class="mb-4">همین حالا به خانواده بزرگ ما بپیوندید</p>
+        <a href="{% url 'products:product_list' %}" class="cta-btn">مشاهده محصولات</a>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // اسکریپت‌های اختصاصی صفحه درباره ما
+    $(document).ready(function() {
+        // انیمیشن اسکرول برای بخش‌ها
+        $('a[href^="#"]').on('click', function(event) {
+            var target = $(this.getAttribute('href'));
+            if(target.length) {
+                event.preventDefault();
+                $('html, body').stop().animate({
+                    scrollTop: target.offset().top - 100
+                }, 1000);
+            }
+        });
+
+        // انیمیشن برای کارت‌ها هنگام اسکرول
+        $(window).scroll(function() {
+            $('.value-card, .team-card, .gallery-item').each(function() {
+                var position = $(this).offset().top;
+                var scroll = $(window).scrollTop();
+                var windowHeight = $(window).height();
+
+                if (scroll > position - windowHeight + 200) {
+                    $(this).addClass('animated');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

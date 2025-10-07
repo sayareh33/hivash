@@ -1,0 +1,44 @@
+<!-- accounts/templates/accounts/accept_privacy_policy.html -->
+{% extends "_base1.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">پذیرش سیاست حریم خصوصی</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4 p-3 border rounded">
+                        {% include "accounts/privacy_policy.html" %}
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" 
+                                   id="{{ form.accept.id_for_label }}" 
+                                   name="{{ form.accept.name }}" required>
+                            <label class="form-check-label" for="{{ form.accept.id_for_label }}">
+                                من سیاست حریم خصوصی را خوانده‌ام و می‌پذیرم
+                            </label>
+                            {% if form.accept.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.accept.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                تایید و ادامه
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+<!-- accounts/templates/accounts/terms_conditions.html -->
+<div class="terms-content">
+    <h4 class="text-center mb-4">شرایط و ضوابط استفاده از سرویس</h4>
+    
+    <div class="card mb-3">
+        <div class="card-header bg-light">
+            <h5>۱. تعاریف</h5>
+        </div>
+        <div class="card-body">
+            <p>در این توافقنامه، اصطلاحات زیر در معانی مشروح مربوط به کار می‌روند:</p>
+            <ul>
+                <li><strong>سرویس</strong>: خدمات ارائه شده توسط {{ site_name }}</li>
+                <li><strong>کاربر</strong>: شخصی که با پذیرش این شرایط از خدمات استفاده می‌کند</li>
+                <li><strong>حساب کاربری</strong>: فضای اختصاص داده شده به کاربر در سرویس</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header bg-light">
+            <h5>۲. پذیرش شرایط</h5>
+        </div>
+        <div class="card-body">
+            <p>با ثبت‌نام در این سرویس، شما تمام شرایط و ضوابط مندرج در این صفحه را می‌پذیرید.</p>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header bg-light">
+            <h5>۳. مسئولیت‌های کاربر</h5>
+        </div>
+        <div class="card-body">
+            <ul>
+                <li>کاربر متعهد می‌شود اطلاعات صحیح و کامل ارائه دهد</li>
+                <li>حفظ امنیت حساب کاربری بر عهده کاربر است</li>
+                <li>هرگونه استفاده غیرقانونی از سرویس ممنوع است</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header bg-light">
+            <h5>۴. حریم خصوصی</h5>
+        </div>
+        <div class="card-body">
+            <p>ما متعهد به حفظ حریم خصوصی شما هستیم. اطلاعات شما طبق <a href="{% url 'accounts:privacy_policy' %}">سیاست حریم خصوصی</a> ما محافظت می‌شود.</p>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header bg-light">
+            <h5>۵. محدودیت‌ها</h5>
+        </div>
+        <div class="card-body">
+            <ul>
+                <li>حداقل سن برای استفاده از سرویس: ۱۸ سال</li>
+                <li>هر کاربر فقط مجاز به ایجاد یک حساب است</li>
+                <li>استفاده تجاری بدون مجوز کتبی ممنوع است</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header bg-light">
+            <h5>۶. تغییر شرایط</h5>
+        </div>
+        <div class="card-body">
+            <p>ما حق تغییر این شرایط را در هر زمان با اطلاع قبلی محفوظ می‌داریم.</p>
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-4">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>توجه:</strong> این نسخه از شرایط و ضوابط در تاریخ {{ current_date }} به روزرسانی شده است.
+    </div>
+</div>

@@ -1,0 +1,406 @@
+{% extends '_base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block title %}ویرایش پروفایل - {{ site_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .profile-tabs {
+        border-bottom: 2px solid #e9ecef;
+        margin-bottom: 25px;
+    }
+
+    .profile-tabs .nav-link {
+        color: #6c757d;
+        font-weight: 500;
+        padding: 12px 25px;
+        border: none;
+        border-bottom: 3px solid transparent;
+    }
+
+    .profile-tabs .nav-link.active {
+        color: #4e73df;
+        border-bottom-color: #4e73df;
+        background: transparent;
+    }
+
+    .profile-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+        border: none;
+    }
+
+    .profile-card-header {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 600;
+        color: #4e73df;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .profile-card-body {
+        padding: 20px;
+    }
+
+    .order-history {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .order-item {
+        border-left: 3px solid #4e73df;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+
+    .order-status {
+        font-size: 0.85rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    .order-status-delivered {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .order-status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .order-status-canceled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-tabs .nav-link {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <h2 class="mb-4">مدیریت پروفایل کاربری</h2>
+
+    <ul class="nav nav-tabs profile-tabs" id="profileTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab">
+                <i class="fas fa-user me-2"></i>اطلاعات شخصی
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">
+                <i class="fas fa-shopping-bag me-2"></i>تاریخچه سفارشات
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
+                <i class="fas fa-shield-alt me-2"></i>امنیت و حریم خصوصی
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="profileTabsContent">
+        <!-- تب اطلاعات شخصی -->
+        <div class="tab-pane fade show active" id="personal" role="tabpanel">
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <i class="fas fa-user-edit me-2"></i>ویرایش اطلاعات شخصی
+                </div>
+                <div class="profile-card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <div class="info-grid">
+                            <div>
+                                <h6 class="mb-3 text-primary">اطلاعات هویتی</h6>
+                                {{ form.first_name|as_crispy_field }}
+                                {{ form.last_name|as_crispy_field }}
+                                {{ form.birth_date|as_crispy_field }}
+                            </div>
+
+                            <div>
+                                <h6 class="mb-3 text-primary">اطلاعات تماس</h6>
+                                {{ form.email|as_crispy_field }}
+                                {{ form.emergency_contact|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <h6 class="mb-3 text-primary">آدرس و موقعیت جغرافیایی</h6>
+                            <div class="info-grid">
+                                <div>
+                                    {{ form.country|as_crispy_field }}
+                                    {{ form.province|as_crispy_field }}
+                                </div>
+                                <div>
+                                    {{ form.city|as_crispy_field }}
+                                    {{ form.postal_code|as_crispy_field }}
+                                </div>
+                            </div>
+                            {{ form.address|as_crispy_field }}
+                        </div>
+
+                        <div class="mt-4">
+                            <h6 class="mb-3 text-primary">تنظیمات اطلاع‌رسانی</h6>
+                            <div class="d-flex flex-wrap gap-4">
+                                <div class="form-check form-switch">
+                                    {{ form.email_notifications }}
+                                    <label class="form-check-label" for="{{ form.email_notifications.id_for_label }}">
+                                        {{ form.email_notifications.label }}
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    {{ form.sms_notifications }}
+                                    <label class="form-check-label" for="{{ form.sms_notifications.id_for_label }}">
+                                        {{ form.sms_notifications.label }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                            <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-right me-2"></i>بازگشت
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>ذخیره تغییرات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- تب تاریخچه سفارشات -->
+        <div class="tab-pane fade" id="orders" role="tabpanel">
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <i class="fas fa-history me-2"></i>تاریخچه سفارشات
+                </div>
+                <div class="profile-card-body">
+                    {% if orders %}
+                    <div class="order-history">
+                        {% for order in orders %}
+                        <div class="order-item">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1">سفارش #{{ order.id }}</h6>
+                                    <small class="text-muted">تاریخ: {{ order.created_at|date:"Y/m/d" }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge order-status order-status-{{ order.status }}">{{ order.get_status_display }}</span>
+                                    <div class="mt-1">
+                                        <strong>{{ order.total_amount|intcomma }} تومان</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <small>تعداد کالا: {{ order.items.count }} قلم</small>
+                                <div class="mt-1">
+                                    <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                        مشاهده جزئیات سفارش
+                                    </a>
+                                    {% if order.status == 'delivered' %}
+                                    <button class="btn btn-sm btn-outline-secondary">
+                                        درخواست مرجوعی
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">هنوز هیچ سفارشی ثبت نکرده‌اید.</p>
+                        <a href="{% url 'products:product_list' %}" class="btn btn-primary">
+                            <i class="fas fa-shopping-cart me-2"></i>مشاهده محصولات
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <i class="fas fa-chart-line me-2"></i>آمار خرید
+                </div>
+                <div class="profile-card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="border rounded p-3">
+                                <h4 class="text-primary">{{ total_orders }}</h4>
+                                <small>تعداد کل سفارشات</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="border rounded p-3">
+                                <h4 class="text-success">{{ completed_orders }}</h4>
+                                <small>سفارشات تحویل شده</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="border rounded p-3">
+                                <h4 class="text-info">{{ total_spent|intcomma }}</h4>
+                                <small>تومان کل خریدها</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="border rounded p-3">
+                                <h4 class="text-warning">{{ last_order_date|date:"Y/m/d"|default:"-" }}</h4>
+                                <small>آخرین سفارش</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- تب امنیت و حریم خصوصی -->
+        <div class="tab-pane fade" id="security" role="tabpanel">
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <i class="fas fa-lock me-2"></i>تنظیمات امنیتی
+                </div>
+                <div class="profile-card-body">
+                    <div class="mb-4">
+                        <h6 class="mb-3">تغییر رمز عبور</h6>
+                        <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-key me-2"></i>تغییر رمز عبور
+                        </a>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="mb-3">احراز هویت دو مرحله‌ای</h6>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="twoFactorAuth">
+                            <label class="form-check-label" for="twoFactorAuth">
+                                فعال سازی احراز هویت دو مرحله‌ای
+                            </label>
+                        </div>
+                        <small class="text-muted">با فعال کردن این feature، هنگام ورود به حساب کدی به تلفن همراه شما ارسال خواهد شد.</small>
+                    </div>
+
+                    <div>
+                        <h6 class="mb-3">دستگاه‌های متصل</h6>
+                        <div class="border rounded p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">مرورگر Chrome</h6>
+                                    <small class="text-muted">دسکتاپ - تهران - اکنون فعال</small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger">خروج از دستگاه</button>
+                            </div>
+                        </div>
+
+                        <div class="border rounded p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">Safari</h6>
+                                    <small class="text-muted">iPhone - تهران - 2 روز پیش</small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger">خروج از دستگاه</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <i class="fas fa-trash-alt me-2"></i>حذف حساب کاربری
+                </div>
+                <div class="profile-card-body">
+                    <p class="text-muted">با حذف حساب کاربری، تمام اطلاعات شخصی، تاریخچه سفارشات و سایر داده‌های مرتبط با حساب شما به طور کامل حذف خواهند شد.</p>
+                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                        <i class="fas fa-trash-alt me-2"></i>درخواست حذف حساب
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مودال حذف حساب کاربری -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">حذف حساب کاربری</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>آیا از حذف حساب کاربری خود اطمینان دارید؟ این عمل غیرقابل برگشت است.</p>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmDelete">
+                    <label class="form-check-label" for="confirmDelete">
+                        با عواقب حذف حساب کاربری آشنا هستم و موافقم
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-danger" disabled>حذف دائم حساب</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // فعال کردن دکمه حذف حساب هنگام تایید
+    document.getElementById('confirmDelete').addEventListener('change', function() {
+        document.querySelector('#deleteAccountModal .btn-danger').disabled = !this.checked;
+    });
+
+    // مدیریت تب‌ها و ذخیره وضعیت در URL
+    document.addEventListener('DOMContentLoaded', function() {
+        const profileTabs = document.querySelectorAll('#profileTabs button[data-bs-toggle="tab"]');
+
+        profileTabs.forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(event) {
+                const target = event.target.getAttribute('data-bs-target');
+                window.location.hash = target;
+            });
+        });
+
+        // بازیابی تب فعال از URL
+        if (window.location.hash) {
+            const activeTab = document.querySelector(`#profileTabs button[data-bs-target="${window.location.hash}"]`);
+            if (activeTab) {
+                new bootstrap.Tab(activeTab).show();
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+
+```html
+{% extends '_base.html' %}
+{% block content %}
+<article class="article-detail">
+  <h1>{{ object.title }}</h1>
+  <div class="meta">نوشته‌شده در {{ object.publish_date }} — دسته: {{ object.category }}</div>
+  <div class="gallery">
+    {% for img in object.images.all %}
+      <img src="{{ img.image.url }}" alt="{{ img.caption }}">
+    {% endfor %}
+  </div>
+  <div class="body">{{ object.body|linebreaks }}</div>
+
+  <section class="comments">
+    <h4>نظرات و سوالات</h4>
+    {% for c in comments %}
+      <div class="comment">
+        <strong>{{ c.name }}</strong> — <em>{{ c.type }}</em>
+        <p>{{ c.body }}</p>
+        {% for r in c.replies.all %}
+          <div class="reply">{{ r.name }}: {{ r.body }}</div>
+        {% endfor %}
+      </div>
+    {% empty %}
+      <p>هنوز نظری ثبت نشده.</p>
+    {% endfor %}
+
+    <h5>ثبت نظر / سوال</h5>
+    <form action="{% url 'articles:submit_comment' object.slug %}" method="post">{% csrf_token %}
+      {{ comment_form.as_p }}
+      <button type="submit">ارسال</button>
+    </form>
+  </section>
+</article>
+{% endblock %}

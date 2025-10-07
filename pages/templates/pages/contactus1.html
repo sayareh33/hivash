@@ -1,0 +1,212 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* استایل‌های قبلی شما */
+    .contact-hero {
+        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{% static "img/contact-bg.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        height: 50vh;
+        display: flex;
+        align-items: center;
+        color: white;
+        text-align: center;
+        position: relative;
+    }
+
+    /* استایل‌های دیگر شما بدون تغییر */
+
+    /* استایل برای خطاهای فرم */
+    .error-list {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0;
+        color: #dc3545;
+        font-size: 0.9rem;
+    }
+
+    .is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+    }
+
+    .alert {
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+    }
+
+    .alert-success {
+        color: #0f5132;
+        background-color: #d1e7dd;
+        border-color: #badbcc;
+    }
+
+    .alert-error {
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- بخش هیرو -->
+<section class="contact-hero">
+    <div class="container">
+        <div class="contact-hero-content">
+            <h1>با ما در تماس باشید</h1>
+            <p class="lead">هر سوال، پیشنهاد یا انتقادی دارید، خوشحال می‌شویم بشنویم</p>
+        </div>
+    </div>
+</section>
+
+<!-- بخش اصلی تماس -->
+<section class="contact-section">
+    <div class="container">
+        <!-- نمایش پیام‌های موفقیت/خطا -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} {% if 'error' in message.tags %}alert-error{% else %}alert-success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row">
+            <!-- اطلاعات تماس (بدون تغییر) -->
+            <div class="col-lg-5 mb-5 mb-lg-0">
+                <div class="contact-info">
+                    <h2 class="mb-4">راه‌های ارتباطی</h2>
+
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="contact-text">
+                            <h3>آدرس</h3>
+                            <p>استان فارس، شهرستان قیر و کارزین، قیر، کوچه سه شهید</p>
+                        </div>
+                    </div>
+
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="contact-text">
+                            <h3>تلفن</h3>
+                            <p><a href="tel:+989384501026">09384501026</a></p>
+                            <p><a href="tel:+987134567890">07134567890</a></p>
+                        </div>
+                    </div>
+
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-text">
+                            <h3>ایمیل</h3>
+                            <p><a href="mailto:info@hiva-eshghal.ir">info@hiva-eshghal.ir</a></p>
+                            <p><a href="mailto:support@hiva-eshghal.ir">support@hiva-eshghal.ir</a></p>
+                        </div>
+                    </div>
+
+                    <div class="business-hours">
+                        <h3 class="mb-3">ساعات کاری</h3>
+                        <ul class="hours-list">
+                            <li>
+                                <span class="day">شنبه تا چهارشنبه:</span>
+                                <span class="time">8:00 - 17:00</span>
+                            </li>
+                            <li>
+                                <span class="day">پنجشنبه:</span>
+                                <span class="time">8:00 - 14:00</span>
+                            </li>
+                            <li>
+                                <span class="day">جمعه:</span>
+                                <span class="time">تعطیل</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="social-links">
+                        <a href="#" class="social-link">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fab fa-telegram"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- فرم تماس با فرم Django -->
+            <div class="col-lg-7">
+                <div class="contact-form">
+                    <h2 class="mb-4">پیام به ما</h2>
+                    <form method="post" action="{% url 'pages:contactus' %}">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <ul class="error-list">
+                                        {% for error in form.name.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <ul class="error-list">
+                                        {% for error in form.email.errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {{ form.subject }}
+                        {% if form.subject.errors %}
+                            <ul class="error-list">
+                                {% for error in form.subject.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+
+                        {{ form.message }}
+                        {% if form.message.errors %}
+                            <ul class="error-list">
+                                {% for error in form.message.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+
+                        <button type="submit" class="submit-btn">ارسال پیام</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- نقشه -->
+        <div class="map-container">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3456.789012345678!2d51.12345678901234!3d29.98765432109876!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjnCsDU5JzE1LjYiTiA1McKwMDcnMjguNiJF!5e0!3m2!1sen!2sir!4v1234567890123!5m2!1sen!2sir" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+    </div>
+</section>
+{% endblock %}

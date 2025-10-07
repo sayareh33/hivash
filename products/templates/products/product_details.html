@@ -1,0 +1,330 @@
+{% extends '_base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ product.title }} - فروشگاه هیوا{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --green: #00ff7f;
+    --yellow: #fff200;
+    --gradient: linear-gradient(135deg, var(--green), var(--yellow));
+}
+
+.product-gallery img {
+    border-radius: 10px;
+    width: 100%;
+    object-fit: cover;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.product-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.product-price {
+    font-size: 1.3rem;
+    color: var(--green);
+    font-weight: bold;
+}
+
+.old-price {
+    text-decoration: line-through;
+    color: #888;
+    font-size: 1rem;
+}
+
+.add-to-cart-btn {
+    background: var(--gradient);
+    border: none;
+    color: #000;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 10px 25px;
+    transition: all 0.3s ease;
+}
+.add-to-cart-btn:hover {
+    filter: brightness(0.9);
+    transform: translateY(-2px);
+}
+
+.nav-tabs {
+    border-bottom: 2px solid #eee;
+}
+.nav-tabs .nav-link {
+    border: none;
+    color: #555;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+.nav-tabs .nav-link.active {
+    border-bottom: 3px solid var(--green);
+    color: var(--green);
+}
+.tab-content {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    padding: 25px;
+}
+
+.feature-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+}
+.feature-table td:first-child {
+    font-weight: bold;
+    width: 40%;
+    color: #333;
+}
+
+.comment-box {
+    background: #f8f9fc;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+.comment-author {
+    font-weight: 600;
+    color: #333;
+}
+.comment-date {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+
+{#________________________________#}
+.related-products h3 {
+    background: linear-gradient(135deg, #00ff7f, #fff200);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+
+.related-slider {
+    scroll-behavior: smooth;
+}
+
+.related-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+}
+
+.related-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+.related-card img {
+    border-radius: 15px 15px 0 0;
+    height: 180px;
+    object-fit: cover;
+}
+{#_________________________________________#}
+.recently-viewed h3 {
+    background: linear-gradient(135deg, #00ff7f, #fff200);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+
+.recent-slider {
+    scroll-behavior: smooth;
+}
+
+.recent-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+}
+
+.recent-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+.recent-card img {
+    border-radius: 15px 15px 0 0;
+    height: 180px;
+    object-fit: cover;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <div class="row">
+    <!-- تصویر محصول -->
+    <div class="col-lg-5 mb-4">
+      <div class="product-gallery">
+        {% if product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.title }}">
+        {% else %}
+          <img src="{% static 'img/products/default.jpg' %}" alt="بدون تصویر">
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- جزئیات محصول -->
+    <div class="col-lg-7">
+      <h1 class="product-title">{{ product.title }}</h1>
+      <p class="text-muted">{{ product.short_description }}</p>
+
+      <div class="d-flex align-items-center mb-3">
+        {% if active_discount %}
+          <span class="product-price">{{ final_price|intcomma }} تومان</span>
+          <span class="old-price ms-3">{{ product.unit_price|intcomma }} تومان</span>
+        {% else %}
+          <span class="product-price">{{ product.unit_price|intcomma }} تومان</span>
+        {% endif %}
+      </div>
+
+      <form action="{% url 'carts:add_to_cart' product.id %}" method="post" class="mb-3">
+        {% csrf_token %}
+        <input type="number" name="quantity" value="1" min="1" class="form-control d-inline-block w-auto me-2">
+        <button type="submit" class="add-to-cart-btn">
+          <i class="bi bi-cart-plus me-2"></i> افزودن به سبد خرید
+        </button>
+      </form>
+
+      <p class="text-muted">دسته‌بندی:
+        <a href="{{ product.category.get_absolute_url }}" class="text-decoration-none text-success">
+          {{ product.category.title }}
+        </a>
+      </p>
+    </div>
+  </div>
+
+  <!-- تب‌ها -->
+  <ul class="nav nav-tabs mt-5" id="productTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="desc-tab" data-bs-toggle="tab" data-bs-target="#desc" type="button" role="tab">توضیحات</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="features-tab" data-bs-toggle="tab" data-bs-target="#features" type="button" role="tab">ویژگی‌ها</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button" role="tab">نظرات کاربران</button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="productTabsContent">
+    <!-- توضیحات -->
+    <div class="tab-pane fade show active" id="desc" role="tabpanel">
+      <h4 class="mb-3">توضیحات محصول</h4>
+      <p>{{ product.description|safe }}</p>
+    </div>
+
+    <!-- ویژگی‌ها -->
+    <div class="tab-pane fade" id="features" role="tabpanel">
+      <h4 class="mb-3">مشخصات فنی</h4>
+      {% if product.features.exists %}
+        <table class="feature-table w-100">
+          {% for f in product.features.all %}
+          <tr>
+            <td>{{ f.name }}</td>
+            <td>{{ f.value }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      {% else %}
+        <p class="text-muted">ویژگی خاصی برای این محصول ثبت نشده است.</p>
+      {% endif %}
+    </div>
+
+    <!-- نظرات -->
+    <div class="tab-pane fade" id="comments" role="tabpanel">
+      <h4 class="mb-3">نظرات کاربران</h4>
+
+      {% for comment in comments %}
+        <div class="comment-box">
+          <div class="d-flex justify-content-between">
+            <span class="comment-author">{{ comment.author.username }}</span>
+            <span class="comment-date">{{ comment.created_at|naturaltime }}</span>
+          </div>
+          <p class="mt-2">{{ comment.text }}</p>
+        </div>
+      {% empty %}
+        <p class="text-muted">هنوز نظری ثبت نشده است.</p>
+      {% endfor %}
+
+      {% if user.is_authenticated %}
+      <h5 class="mt-4">ارسال نظر جدید</h5>
+      <form action="{% url 'products:add_comment' product.id %}" method="post">
+        {% csrf_token %}
+        {{ comment_form.as_p }}
+        <button type="submit" class="btn btn-success mt-2">ارسال نظر</button>
+      </form>
+      {% else %}
+      <p class="text-muted mt-3">
+        برای ارسال نظر باید <a href="{% url 'accounts:login' %}" class="text-success">وارد شوید</a>.
+      </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+    <hr class="my-5">
+
+<section class="related-products mt-5">
+  <h3 class="mb-4 text-center fw-bold">محصولات مرتبط</h3>
+
+  {% if related_products %}
+  <div class="related-slider d-flex overflow-auto gap-4 pb-3">
+    {% for item in related_products %}
+    <div class="related-card flex-shrink-0" style="width: 220px;">
+      <a href="{{ item.get_absolute_url }}" class="text-decoration-none text-dark">
+        <div class="card shadow-sm h-100 border-0">
+          <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}">
+          <div class="card-body text-center">
+            <h6 class="fw-semibold">{{ item.title|truncatechars:40 }}</h6>
+            {% if item.get_best_discount %}
+              <div>
+                <span class="text-success fw-bold">{{ item.get_final_price|intcomma }} تومان</span><br>
+                <small class="text-muted text-decoration-line-through">{{ item.unit_price|intcomma }}</small>
+              </div>
+            {% else %}
+              <span class="fw-bold text-dark">{{ item.unit_price|intcomma }} تومان</span>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="text-muted text-center">محصول مشابهی برای نمایش وجود ندارد.</p>
+  {% endif %}
+</section>
+
+<hr class="my-5">
+
+<section class="recently-viewed mt-5">
+  <h3 class="mb-4 text-center fw-bold">محصولات اخیراً مشاهده‌شده</h3>
+
+  {% if recently_viewed_products %}
+  <div class="recent-slider d-flex overflow-auto gap-4 pb-3">
+    {% for item in recently_viewed_products %}
+    <div class="recent-card flex-shrink-0" style="width: 220px;">
+      <a href="{{ item.get_absolute_url }}" class="text-decoration-none text-dark">
+        <div class="card shadow-sm h-100 border-0">
+          <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}">
+          <div class="card-body text-center">
+            <h6 class="fw-semibold">{{ item.title|truncatechars:40 }}</h6>
+            <span class="fw-bold text-dark">{{ item.get_final_price|intcomma }} تومان</span>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="text-muted text-center">شما هنوز محصولی را مشاهده نکرده‌اید.</p>
+  {% endif %}
+</section>
+
+{% endblock %}

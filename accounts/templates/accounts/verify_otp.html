@@ -1,0 +1,230 @@
+
+
+{% block title %}تأیید شماره تلفن - خانه اشتغال{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header" style="background: linear-gradient(135deg, rgb(76, 175, 80), rgb(255, 193, 7)); color: white;">
+            <div class="logo-container" style="display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                <span class="fw-bold fs-4">خانه اشتغال</span>
+                <img src="/static/img/hiva.png" class="logo-image" style="height: 50px; margin-left: 10px;" alt="لوگو خانه اشتغال">
+            </div>
+            <h4>تأیید شماره تلفن</h4>
+            <p>کد ارسال شده به {{ request.session.signup_phone|default:"شماره شما" }} را وارد کنید</p>
+        </div>
+
+        <div class="auth-body" style="padding: 2rem;">
+            {% if messages %}
+            <div class="alert-container mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-circle-fill{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label for="otp_code" class="form-label">کد تأیید ۶ رقمی</label>
+                    <div class="otp-input-group">
+                        <input type="text" class="form-control otp-input text-center"
+                               id="otp_code" name="otp_code" maxlength="6"
+                               pattern="[0-9]*" inputmode="numeric"
+                               placeholder="------" required autofocus
+                               style="font-size: 1.5rem; letter-spacing: 0.5rem; font-weight: bold;">
+                    </div>
+                    {% if form.otp_code.errors %}
+                    <div class="invalid-feedback d-block mt-2">
+                        <i class="bi bi-exclamation-circle me-1"></i>
+                        {{ form.otp_code.errors.0 }}
+                    </div>
+                    {% endif %}
+                    <div class="form-text text-center mt-2">
+                        <i class="bi bi-info-circle me-1"></i>
+                        کد ۶ رقمی به شماره شما ارسال شد
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 mb-3" style="background: linear-gradient(135deg, rgb(76, 175, 80), rgb(255, 193, 7)); border: none;">
+                    <i class="bi bi-check-circle me-2"></i>
+                    تأیید و فعال‌سازی حساب
+                </button>
+
+                <div class="text-center">
+                    <p class="mb-2 text-muted">کد را دریافت نکرده‌اید؟</p>
+                    <form method="post" action="{% url 'accounts:resend_otp' %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary" id="resend-btn">
+                            <i class="bi bi-arrow-repeat me-1"></i>
+                            ارسال مجدد کد
+                        </button>
+                    </form>
+                    <div class="mt-2">
+                        <span class="countdown text-muted" id="countdown" style="display: none;">
+                            <i class="bi bi-clock me-1"></i>
+                            <span id="countdown-text">۲:۰۰</span>
+                        </span>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.otp-input-group {
+    position: relative;
+    margin: 0 auto;
+    max-width: 300px;
+}
+
+.otp-input {
+    padding: 1rem;
+    text-align: center;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.otp-input:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+    transform: translateY(-2px);
+}
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    background-color: #f8f9fa;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23f8f9fc" width="100" height="100"/><path d="M0,0 L100,100 M20,0 L100,80 M0,20 L80,100" stroke="%23e9ecef" stroke-width="0.5"/></svg>');
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 450px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.auth-header {
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-header::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.auth-header::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: -20px;
+    width: 90px;
+    height: 90px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.auth-header h4 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.auth-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4CAF50, #FFC107);
+    border: none;
+    padding: 0.9rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #3d8b40, #e6ac00);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.countdown {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const otpInput = document.getElementById('otp_code');
+    const resendBtn = document.getElementById('resend-btn');
+    const countdown = document.getElementById('countdown');
+    const countdownText = document.getElementById('countdown-text');
+
+    // حرکت خودکار بین inputهای OTP
+    otpInput.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '');
+        if (this.value.length === 6) {
+            this.form.submit();
+        }
+    });
+
+    // جلوگیری از وارد کردن کاراکترهای غیرعددی
+    otpInput.addEventListener('keypress', function(e) {
+        if (e.key < '0' || e.key > '9') {
+            e.preventDefault();
+        }
+    });
+
+    // شروع تایمر برای ارسال مجدد
+    startCountdown(120);
+
+    function startCountdown(seconds) {
+        let countdown = seconds;
+        countdown.style.display = 'block';
+        resendBtn.disabled = true;
+
+        const interval = setInterval(function() {
+            const minutes = Math.floor(countdown / 60);
+            const seconds = countdown % 60;
+
+            countdownText.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            if (--countdown < 0) {
+                clearInterval(interval);
+                countdown.style.display = 'none';
+                resendBtn.disabled = false;
+            }
+        }, 1000);
+    }
+});
+</script>
+{% endblock %}
