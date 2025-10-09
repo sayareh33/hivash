@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 
     'django.contrib.humanize',
     # Third party
+    'django_countries',
     "django_jalali",
     # 'rosetta',
     # 'axes',
@@ -61,9 +62,10 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     "analytics.apps.AnalyticsConfig",
     "articles.apps.ArticlesConfig",
-    # "carts.apps.CartsConfig",
-    # "charity.apps.CharityConfig",
-    # "orders.apps.OrdersConfig",
+    "carts.apps.CartsConfig",
+    "charity.apps.CharityConfig",
+    "config",
+    "orders.apps.OrdersConfig",
     "pages.apps.PagesConfig",
     # "persian_numbers.apps.PersianNumbersConfig",
     "products.apps.ProductsConfig",
@@ -206,6 +208,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # برای جمع‌آوری فایل‌های استاتیک
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 # اگر می‌خواهید فایل‌های آپلود شده هم سرویس داده شوند:
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

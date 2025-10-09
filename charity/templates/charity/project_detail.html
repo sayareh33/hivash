@@ -1,0 +1,164 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- تصویر اصلی پروژه -->
+            <img src="{{ project.image.url }}" alt="{{ project.title }}" class="img-fluid rounded mb-4">
+
+            <!-- توضیحات کامل -->
+            <h2 class="mb-3">{{ project.title }}</h2>
+            <div class="d-flex justify-content-between mb-4">
+                <span class="badge bg-primary">{{ project.get_status_display }}</span>
+                <span class="text-muted">تاریخ پایان: {{ project.end_date|date:"Y/m/d" }}</span>
+            </div>
+
+            <div class="mb-5">
+                {{ project.full_description|linebreaks }}
+            </div>
+
+            <!-- گالری تصاویر -->
+            {% if project.gallery.all %}
+            <h4 class="mb-3">گالری تصاویر</h4>
+            <div class="row g-3">
+                {% for image in project.gallery.all %}
+                <div class="col-md-4">
+                    <img src="{{ image.image.url }}" alt="{{ image.caption }}" class="img-thumbnail">
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <!-- وضعیت پروژه -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">وضعیت پروژه</h5>
+
+                    <!-- نوار پیشرفت -->
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar"
+                             style="width: {{ project.progress }}%;"
+                             aria-valuenow="{{ project.progress }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                            {{ project.progress }}%
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>جمع‌آوری شده:</span>
+                        <strong>{{ project.current_amount|floatformat:"0" }} تومان</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>هدف پروژه:</span>
+                        <strong>{{ project.target_amount|floatformat:"0" }} تومان</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>روزهای باقیمانده:</span>
+                        <strong>{{ project.remaining_days }} روز</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <span>تعداد حامیان:</span>
+                        <strong>{{ project.donors_count }} نفر</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- فرم اهدا -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">حمایت مالی</h5>
+                    <form method="post" action="{% url 'charity:donation_create' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="project" value="{{ project.id }}">
+
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">مبلغ حمایت (تومان)</label>
+                            <input type="number" class="form-control" id="amount" name="amount"
+                                   min="1000" required value="100000">
+                        </div>
+
+                        {% if request.user.is_authenticated %}
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_anonymous" name="is_anonymous">
+                            <label class="form-check-label" for="is_anonymous">حمایت ناشناس</label>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="message" class="form-label">پیام حمایتی (اختیاری)</label>
+                            <textarea class="form-control" id="message" name="message" rows="3"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">درگاه پرداخت</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_gateway"
+                                       id="zarinpal" value="zarinpal" checked>
+                                <label class="form-check-label" for="zarinpal">
+                                    زرین‌پال
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_gateway"
+                                       id="idpay" value="idpay">
+                                <label class="form-check-label" for="idpay">
+                                    آیدی پی
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            پرداخت آنلاین
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- لیست آخرین حامیان -->
+    {% if donations %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4 class="mb-4">آخرین حامیان این پروژه</h4>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>نام حامی</th>
+                            <th>مبلغ</th>
+                            <th>تاریخ</th>
+                            <th>پیام</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for donation in donations %}
+                        <tr>
+                            <td>
+                                {% if donation.is_anonymous %}
+                                ناشناس
+                                {% else %}
+                                {{ donation.donor.get_full_name|default:donation.donor.username }}
+                                {% endif %}
+                            </td>
+                            <td>{{ donation.amount|floatformat:"0" }} تومان</td>
+                            <td>{{ donation.donation_date|date:"Y/m/d" }}</td>
+                            <td>{{ donation.message|default:"-"|truncatechars:30 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

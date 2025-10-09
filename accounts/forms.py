@@ -1,4 +1,4 @@
-# accounts/forms.py
+﻿# accounts/forms.py
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
@@ -16,7 +16,7 @@ User = get_user_model()
 
 class SignUpForm(forms.Form):
     phone = forms.CharField(
-        label=_('شماره تلفن همراه'),
+        label=_('Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù‡Ù…Ø±Ø§Ù‡'),
         max_length=11,
         validators=[lambda x: validate_iranian_mobile(x, 'database')],
         widget=forms.TextInput(attrs={
@@ -27,7 +27,7 @@ class SignUpForm(forms.Form):
     )
 
     email = forms.EmailField(
-        label='ایمیل (اختیاری)',
+        label='Ø§ÛŒÙ…ÛŒÙ„ (Ø§Ø®ØªÛŒØ§Ø±ÛŒ)',
         required=False,
         widget=forms.EmailInput(attrs={
             'placeholder': 'example@domain.com',
@@ -36,45 +36,45 @@ class SignUpForm(forms.Form):
     )
 
     password = forms.CharField(
-        label=_('رمز عبور'),
+        label=_('Ø±Ù…Ø² Ø¹Ø¨ÙˆØ±'),
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'حداقل ۸ کاراکتر',
+            'placeholder': 'Ø­Ø¯Ø§Ù‚Ù„ Û¸ Ú©Ø§Ø±Ø§Ú©ØªØ±',
             'autocomplete': 'new-password'
         }),
         min_length=8
     )
 
     confirm_password = forms.CharField(
-        label=_('تکرار رمز عبور'),
+        label=_('ØªÚ©Ø±Ø§Ø± Ø±Ù…Ø² Ø¹Ø¨ÙˆØ±'),
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'تکرار رمز عبور',
+            'placeholder': 'ØªÚ©Ø±Ø§Ø± Ø±Ù…Ø² Ø¹Ø¨ÙˆØ±',
             'autocomplete': 'new-password'
         }),
         min_length=8
     )
-    terms_accepted = forms.BooleanField(  # نام فیلد باید با HTML مطابقت داشته باشد
-        label='موافقت با شرایط استفاده',
+    terms_accepted = forms.BooleanField(  # Ù†Ø§Ù… ÙÛŒÙ„Ø¯ Ø¨Ø§ÛŒØ¯ Ø¨Ø§ HTML Ù…Ø·Ø§Ø¨Ù‚Øª Ø¯Ø§Ø´ØªÙ‡ Ø¨Ø§Ø´Ø¯
+        label='Ù…ÙˆØ§ÙÙ‚Øª Ø¨Ø§ Ø´Ø±Ø§ÛŒØ· Ø§Ø³ØªÙØ§Ø¯Ù‡',
         required=True,
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        error_messages={'required': 'لطفاً شرایط استفاده را بپذیرید'}
+        error_messages={'required': 'Ù„Ø·ÙØ§Ù‹ Ø´Ø±Ø§ÛŒØ· Ø§Ø³ØªÙØ§Ø¯Ù‡ Ø±Ø§ Ø¨Ù¾Ø°ÛŒØ±ÛŒØ¯'}
 
     )
 
     # privacy_policy_accepted = forms.BooleanField(
-    #     label=_('موافقت با حریم خصوصی'),
+    #     label=_('Ù…ÙˆØ§ÙÙ‚Øª Ø¨Ø§ Ø­Ø±ÛŒÙ… Ø®ØµÙˆØµÛŒ'),
     #     widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-    #     error_messages={'required': _('لطفاً حریم خصوصی را بپذیرید')}
+    #     error_messages={'required': _('Ù„Ø·ÙØ§Ù‹ Ø­Ø±ÛŒÙ… Ø®ØµÙˆØµÛŒ Ø±Ø§ Ø¨Ù¾Ø°ÛŒØ±ÛŒØ¯')}
     # )
 
     def clean(self):
         cleaned_data = super().clean()
         password = cleaned_data.get('password')
-        password_confirm = cleaned_data.get('password_confirm')
+        confirm_password = cleaned_data.get('confirm_password')
 
-        if password and password_confirm and password != password_confirm:
-            raise ValidationError(_('رمز عبور و تکرار آن مطابقت ندارند'))
+        if password and confirm_password and password != confirm_password:
+            self.add_error('confirm_password', _('Passwords do not match.'))
 
         return cleaned_data
 
@@ -82,24 +82,26 @@ class SignUpForm(forms.Form):
         phone = self.cleaned_data.get('phone')
         password = self.cleaned_data.get('password')
         confirm_password = self.cleaned_data.get('confirm_password')
+
         try:
             validated_phone = validate_iranian_mobile(phone)
 
-            # بررسی وجود کاربر با این شماره
             if CustomUser.objects.filter(phone=validated_phone).exists():
-                raise ValidationError(_('این شماره تلفن قبلاً ثبت شده است'))
+                raise ValidationError(_('This phone number is already registered.'))
 
             if password and confirm_password and password != confirm_password:
-                raise ValidationError('رمز عبور و تکرار آن مطابقت ندارند')
+                raise ValidationError(_('Passwords do not match.'))
+
             return validated_phone
-        except ValidationError as e:
-            raise ValidationError(_('شماره تلفن معتبر نیست'))
+        except ValidationError as exc:
+            raise ValidationError(exc.messages[0] if exc.messages else _('Enter a valid phone number.'))
+
 
 class OTPVerificationForm(forms.Form):
     otp_code = forms.CharField(
         max_length=6,
         min_length=6,
-        label=_('کد تأیید'),
+        label=_('Ú©Ø¯ ØªØ£ÛŒÛŒØ¯'),
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'xxxxxx',
@@ -116,7 +118,7 @@ from .validators import validate_iranian_mobile
 class LoginForm(forms.Form):
     phone = forms.CharField(
         max_length=15,
-        label='شماره تلفن همراه',
+        label='Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù‡Ù…Ø±Ø§Ù‡',
         validators=[validate_iranian_mobile],
         widget=forms.TextInput(attrs={
             'class': 'form-control',
@@ -125,16 +127,16 @@ class LoginForm(forms.Form):
     )
 
     password = forms.CharField(
-        label='رمز عبور',
+        label='Ø±Ù…Ø² Ø¹Ø¨ÙˆØ±',
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'رمز عبور خود را وارد کنید'
+            'placeholder': 'Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø®ÙˆØ¯ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯'
         })
     )
 
     remember_me = forms.BooleanField(
         required=False,
-        label='مرا به خاطر بسپار',
+        label='Ù…Ø±Ø§ Ø¨Ù‡ Ø®Ø§Ø·Ø± Ø¨Ø³Ù¾Ø§Ø±',
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
 
@@ -142,7 +144,7 @@ class LoginForm(forms.Form):
 # class ForgotPasswordForm(forms.Form):
 #     phone = forms.CharField(
 #         max_length=15,
-#         label=_('شماره تلفن همراه'),
+#         label=_('Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù‡Ù…Ø±Ø§Ù‡'),
 #         widget=forms.TextInput(attrs={
 #             'class': 'form-control',
 #             'placeholder': '09xxxxxxxxx',
@@ -154,47 +156,47 @@ class LoginForm(forms.Form):
 #
 # class ResetPasswordForm(forms.Form):
 #     new_password = forms.CharField(
-#         label=_('رمز عبور جدید'),
+#         label=_('Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯'),
 #         widget=forms.PasswordInput(attrs={
 #             'class': 'form-control',
-#             'placeholder': 'حداقل ۸ کاراکتر',
+#             'placeholder': 'Ø­Ø¯Ø§Ù‚Ù„ Û¸ Ú©Ø§Ø±Ø§Ú©ØªØ±',
 #             'autocomplete': 'new-password'
 #         }),
 #         min_length=8
 #     )
 #
 #     confirm_password = forms.CharField(
-#         label=_('تکرار رمز عبور جدید'),
+#         label=_('ØªÚ©Ø±Ø§Ø± Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯'),
 #         widget=forms.PasswordInput(attrs={
 #             'class': 'form-control',
-#             'placeholder': 'تکرار رمز عبور جدید',
+#             'placeholder': 'ØªÚ©Ø±Ø§Ø± Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯',
 #             'autocomplete': 'new-password'
 #         })
 #     )
 #
 #     def clean(self):
-#         cleaned_data = super().clean()
-#         new_password = cleaned_data.get('new_password')
-#         confirm_password = cleaned_data.get('confirm_password')
-#
-#         if new_password and confirm_password and new_password != confirm_password:
-#             raise ValidationError(_('رمز عبور و تکرار آن مطابقت ندارند'))
-#
-#         return cleaned_data
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+
+        if password and confirm_password and password != confirm_password:
+            self.add_error('confirm_password', _('Passwords do not match.'))
+
+        return cleaned_data
 #
 #
 class ResendOTPForm(forms.Form):
     """
-    فرم ساده برای درخواست ارسال مجدد OTP
-    این فرم معمولاً از طریق AJAX ارسال می‌شود
+    ÙØ±Ù… Ø³Ø§Ø¯Ù‡ Ø¨Ø±Ø§ÛŒ Ø¯Ø±Ø®ÙˆØ§Ø³Øª Ø§Ø±Ø³Ø§Ù„ Ù…Ø¬Ø¯Ø¯ OTP
+    Ø§ÛŒÙ† ÙØ±Ù… Ù…Ø¹Ù…ÙˆÙ„Ø§Ù‹ Ø§Ø² Ø·Ø±ÛŒÙ‚ AJAX Ø§Ø±Ø³Ø§Ù„ Ù…ÛŒâ€ŒØ´ÙˆØ¯
     """
-    pass  # هیچ فیلدی نیاز نیست، فقط دکمه ارسال مجدد
+    pass  # Ù‡ÛŒÚ† ÙÛŒÙ„Ø¯ÛŒ Ù†ÛŒØ§Ø² Ù†ÛŒØ³ØªØŒ ÙÙ‚Ø· Ø¯Ú©Ù…Ù‡ Ø§Ø±Ø³Ø§Ù„ Ù…Ø¬Ø¯Ø¯
 
 
 class PasswordResetRequestForm(forms.Form):
     phone = forms.CharField(
         max_length=15,
-        label='شماره تلفن همراه',
+        label='Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù‡Ù…Ø±Ø§Ù‡',
         validators=[validate_iranian_mobile],
         widget=forms.TextInput(attrs={
             'class': 'form-control',
@@ -206,30 +208,30 @@ class PasswordResetRequestForm(forms.Form):
 
 # class PasswordResetConfirmForm(forms.Form):
 #     new_password = forms.CharField(
-#         label='رمز عبور جدید',
+#         label='Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯',
 #         widget=forms.PasswordInput(attrs={
 #             'class': 'form-control',
-#             'placeholder': 'رمز عبور جدید'
+#             'placeholder': 'Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯'
 #         }),
 #         min_length=8
 #     )
 #     confirm_password = forms.CharField(
-#         label='تکرار رمز عبور جدید',
+#         label='ØªÚ©Ø±Ø§Ø± Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯',
 #         widget=forms.PasswordInput(attrs={
 #             'class': 'form-control',
-#             'placeholder': 'تکرار رمز عبور جدید'
+#             'placeholder': 'ØªÚ©Ø±Ø§Ø± Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯'
 #         })
 #     )
 #
 #     def clean(self):
-#         cleaned_data = super().clean()
-#         new_password = cleaned_data.get('new_password')
-#         confirm_password = cleaned_data.get('confirm_password')
-#
-#         if new_password and confirm_password and new_password != confirm_password:
-#             raise forms.ValidationError('رمز عبور و تکرار آن مطابقت ندارند')
-#
-#         return cleaned_data
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+
+        if password and confirm_password and password != confirm_password:
+            self.add_error('confirm_password', _('Passwords do not match.'))
+
+        return cleaned_data
 #
 #
 #
@@ -239,229 +241,225 @@ class PasswordResetRequestForm(forms.Form):
 #
 # class CustomPasswordChangeForm(PasswordChangeForm):
 #     """
-#     فرم سفارشی تغییر رمز عبور
+#     ÙØ±Ù… Ø³ÙØ§Ø±Ø´ÛŒ ØªØºÛŒÛŒØ± Ø±Ù…Ø² Ø¹Ø¨ÙˆØ±
 #     """
 #     old_password = forms.CharField(
-#         label=_("رمز عبور فعلی"),
+#         label=_("Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± ÙØ¹Ù„ÛŒ"),
 #         strip=False,
 #         widget=forms.PasswordInput(attrs={
 #             'class': 'form-control',
-#             'placeholder': 'رمز عبور فعلی خود را وارد کنید',
+#             'placeholder': 'Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± ÙØ¹Ù„ÛŒ Ø®ÙˆØ¯ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯',
 #             'autocomplete': 'current-password'
 #         }),
 #         error_messages={
-#             'required': 'لطفاً رمز عبور فعلی را وارد کنید'
+#             'required': 'Ù„Ø·ÙØ§Ù‹ Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± ÙØ¹Ù„ÛŒ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯'
 #         }
 #     )
 #     new_password1 = forms.CharField(
-#         label=_("رمز عبور جدید"),
+#         label=_("Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯"),
 #         strip=False,
 #         widget=forms.PasswordInput(attrs={
 #             'class': 'form-control',
-#             'placeholder': 'رمز عبور جدید خود را وارد کنید',
+#             'placeholder': 'Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯ Ø®ÙˆØ¯ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯',
 #             'autocomplete': 'new-password'
 #         }),
 #         help_text=_(
-#             "رمز عبور باید حداقل ۸ کاراکتر داشته و ترکیبی از حروف و اعداد باشد."
+#             "Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¨Ø§ÛŒØ¯ Ø­Ø¯Ø§Ù‚Ù„ Û¸ Ú©Ø§Ø±Ø§Ú©ØªØ± Ø¯Ø§Ø´ØªÙ‡ Ùˆ ØªØ±Ú©ÛŒØ¨ÛŒ Ø§Ø² Ø­Ø±ÙˆÙ Ùˆ Ø§Ø¹Ø¯Ø§Ø¯ Ø¨Ø§Ø´Ø¯."
 #         ),
 #         error_messages={
-#             'required': 'لطفاً رمز عبور جدید را وارد کنید'
+#             'required': 'Ù„Ø·ÙØ§Ù‹ Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯'
 #         }
 #     )
 #     new_password2 = forms.CharField(
-#         label=_("تکرار رمز عبور جدید"),
+#         label=_("ØªÚ©Ø±Ø§Ø± Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯"),
 #         strip=False,
 #         widget=forms.PasswordInput(attrs={
 #             'class': 'form-control',
-#             'placeholder': 'رمز عبور جدید خود را تکرار کنید',
+#             'placeholder': 'Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯ Ø®ÙˆØ¯ Ø±Ø§ ØªÚ©Ø±Ø§Ø± Ú©Ù†ÛŒØ¯',
 #             'autocomplete': 'new-password'
 #         }),
 #         error_messages={
-#             'required': 'لطفاً تکرار رمز عبور جدید را وارد کنید'
+#             'required': 'Ù„Ø·ÙØ§Ù‹ ØªÚ©Ø±Ø§Ø± Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯'
 #         }
 #     )
 #
 #     def clean_new_password1(self):
 #         password1 = self.cleaned_data.get('new_password1')
 #
-#         # بررسی حداقل طول
+#         # Ø¨Ø±Ø±Ø³ÛŒ Ø­Ø¯Ø§Ù‚Ù„ Ø·ÙˆÙ„
 #         if len(password1) < 8:
-#             raise ValidationError("رمز عبور باید حداقل ۸ کاراکتر باشد.")
+#             raise ValidationError("Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¨Ø§ÛŒØ¯ Ø­Ø¯Ø§Ù‚Ù„ Û¸ Ú©Ø§Ø±Ø§Ú©ØªØ± Ø¨Ø§Ø´Ø¯.")
 #
-#         # بررسی وجود حروف
-#         if not re.search(r'[a-zA-Zآ-ی]', password1):
-#             raise ValidationError("رمز عبور باید شامل حداقل یک حرف باشد.")
+#         # Ø¨Ø±Ø±Ø³ÛŒ ÙˆØ¬ÙˆØ¯ Ø­Ø±ÙˆÙ
+#         if not re.search(r'[a-zA-ZØ¢-ÛŒ]', password1):
+#             raise ValidationError("Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¨Ø§ÛŒØ¯ Ø´Ø§Ù…Ù„ Ø­Ø¯Ø§Ù‚Ù„ ÛŒÚ© Ø­Ø±Ù Ø¨Ø§Ø´Ø¯.")
 #
-#         # بررسی وجود اعداد
+#         # Ø¨Ø±Ø±Ø³ÛŒ ÙˆØ¬ÙˆØ¯ Ø§Ø¹Ø¯Ø§Ø¯
 #         if not re.search(r'\d', password1):
-#             raise ValidationError("رمز عبور باید شامل حداقل یک عدد باشد.")
+#             raise ValidationError("Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¨Ø§ÛŒØ¯ Ø´Ø§Ù…Ù„ Ø­Ø¯Ø§Ù‚Ù„ ÛŒÚ© Ø¹Ø¯Ø¯ Ø¨Ø§Ø´Ø¯.")
 #
 #         return password1
 #
 #     def clean(self):
-#         cleaned_data = super().clean()
-#         password1 = cleaned_data.get('new_password1')
-#         password2 = cleaned_data.get('new_password2')
-#
-#         if password1 and password2 and password1 != password2:
-#             raise ValidationError({
-#                 'new_password2': 'رمز عبورهای وارد شده یکسان نیستند'
-#             })
-#
-#         return cleaned_data
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+
+        if password and confirm_password and password != confirm_password:
+            self.add_error('confirm_password', _('Passwords do not match.'))
+
+        return cleaned_data
 #
 #
 # class CustomPasswordResetForm(PasswordResetForm):
 #     """
-#     فرم سفارشی درخواست بازنشانی رمز عبور
+#     ÙØ±Ù… Ø³ÙØ§Ø±Ø´ÛŒ Ø¯Ø±Ø®ÙˆØ§Ø³Øª Ø¨Ø§Ø²Ù†Ø´Ø§Ù†ÛŒ Ø±Ù…Ø² Ø¹Ø¨ÙˆØ±
 #     """
 #     phone = forms.CharField(
-#         label=_("شماره تلفن همراه"),
+#         label=_("Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù‡Ù…Ø±Ø§Ù‡"),
 #         max_length=15,
 #         widget=forms.TextInput(attrs={
 #             'class': 'form-control',
-#             'placeholder': 'شماره تلفن همراه خود را وارد کنید',
+#             'placeholder': 'Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù‡Ù…Ø±Ø§Ù‡ Ø®ÙˆØ¯ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯',
 #             'autocomplete': 'tel'
 #         }),
 #         error_messages={
-#             'required': 'لطفاً شماره تلفن همراه را وارد کنید'
+#             'required': 'Ù„Ø·ÙØ§Ù‹ Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù‡Ù…Ø±Ø§Ù‡ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯'
 #         }
 #     )
 #
 #     def clean_phone(self):
 #         phone = self.cleaned_data.get('phone')
 #
-#         # استفاده از ولیدیتور مدل برای بررسی شماره تلفن
+#         # Ø§Ø³ØªÙØ§Ø¯Ù‡ Ø§Ø² ÙˆÙ„ÛŒØ¯ÛŒØªÙˆØ± Ù…Ø¯Ù„ Ø¨Ø±Ø§ÛŒ Ø¨Ø±Ø±Ø³ÛŒ Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ†
 #         from .validators import validate_iranian_mobile
 #         try:
 #             phone = validate_iranian_mobile(phone)
 #         except ValidationError:
-#             raise ValidationError("شماره تلفن همراه معتبر نیست.")
+#             raise ValidationError("Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù‡Ù…Ø±Ø§Ù‡ Ù…Ø¹ØªØ¨Ø± Ù†ÛŒØ³Øª.")
 #
-#         # بررسی وجود کاربر با این شماره تلفن
+#         # Ø¨Ø±Ø±Ø³ÛŒ ÙˆØ¬ÙˆØ¯ Ú©Ø§Ø±Ø¨Ø± Ø¨Ø§ Ø§ÛŒÙ† Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ†
 #         if not User.objects.filter(phone=phone, is_active=True).exists():
-#             raise ValidationError("کاربری با این شماره تلفن یافت نشد.")
+#             raise ValidationError("Ú©Ø§Ø±Ø¨Ø±ÛŒ Ø¨Ø§ Ø§ÛŒÙ† Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† ÛŒØ§ÙØª Ù†Ø´Ø¯.")
 #
 #         return phone
 #
 #     def get_users(self, phone):
-#         """بازگرداندن کاربران بر اساس شماره تلفن"""
+#         """Ø¨Ø§Ø²Ú¯Ø±Ø¯Ø§Ù†Ø¯Ù† Ú©Ø§Ø±Ø¨Ø±Ø§Ù† Ø¨Ø± Ø§Ø³Ø§Ø³ Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ†"""
 #         return User.objects.filter(phone=phone, is_active=True)
 #
 #
 # class CustomSetPasswordForm(SetPasswordForm):
 #     """
-#     فرم سفارشی تنظیم رمز عبور جدید
+#     ÙØ±Ù… Ø³ÙØ§Ø±Ø´ÛŒ ØªÙ†Ø¸ÛŒÙ… Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯
 #     """
 #     new_password1 = forms.CharField(
-#         label=_("رمز عبور جدید"),
+#         label=_("Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯"),
 #         strip=False,
 #         widget=forms.PasswordInput(attrs={
 #             'class': 'form-control',
-#             'placeholder': 'رمز عبور جدید خود را وارد کنید',
+#             'placeholder': 'Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯ Ø®ÙˆØ¯ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯',
 #             'autocomplete': 'new-password'
 #         }),
 #         help_text=_(
-#             "رمز عبور باید حداقل ۸ کاراکتر داشته و ترکیبی از حروف و اعداد باشد."
+#             "Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¨Ø§ÛŒØ¯ Ø­Ø¯Ø§Ù‚Ù„ Û¸ Ú©Ø§Ø±Ø§Ú©ØªØ± Ø¯Ø§Ø´ØªÙ‡ Ùˆ ØªØ±Ú©ÛŒØ¨ÛŒ Ø§Ø² Ø­Ø±ÙˆÙ Ùˆ Ø§Ø¹Ø¯Ø§Ø¯ Ø¨Ø§Ø´Ø¯."
 #         ),
 #         error_messages={
-#             'required': 'لطفاً رمز عبور جدید را وارد کنید'
+#             'required': 'Ù„Ø·ÙØ§Ù‹ Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯'
 #         }
 #     )
 #     new_password2 = forms.CharField(
-#         label=_("تکرار رمز عبور جدید"),
+#         label=_("ØªÚ©Ø±Ø§Ø± Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯"),
 #         strip=False,
 #         widget=forms.PasswordInput(attrs={
 #             'class': 'form-control',
-#             'placeholder': 'رمز عبور جدید خود را تکرار کنید',
+#             'placeholder': 'Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯ Ø®ÙˆØ¯ Ø±Ø§ ØªÚ©Ø±Ø§Ø± Ú©Ù†ÛŒØ¯',
 #             'autocomplete': 'new-password'
 #         }),
 #         error_messages={
-#             'required': 'لطفاً تکرار رمز عبور جدید را وارد کنید'
+#             'required': 'Ù„Ø·ÙØ§Ù‹ ØªÚ©Ø±Ø§Ø± Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¬Ø¯ÛŒØ¯ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯'
 #         }
 #     )
 #
 #     def clean_new_password1(self):
 #         password1 = self.cleaned_data.get('new_password1')
 #
-#         # بررسی حداقل طول
+#         # Ø¨Ø±Ø±Ø³ÛŒ Ø­Ø¯Ø§Ù‚Ù„ Ø·ÙˆÙ„
 #         if len(password1) < 8:
-#             raise ValidationError("رمز عبور باید حداقل ۸ کاراکتر باشد.")
+#             raise ValidationError("Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¨Ø§ÛŒØ¯ Ø­Ø¯Ø§Ù‚Ù„ Û¸ Ú©Ø§Ø±Ø§Ú©ØªØ± Ø¨Ø§Ø´Ø¯.")
 #
-#         # بررسی وجود حروف
-#         if not re.search(r'[a-zA-Zآ-ی]', password1):
-#             raise ValidationError("رمز عبور باید شامل حداقل یک حرف باشد.")
+#         # Ø¨Ø±Ø±Ø³ÛŒ ÙˆØ¬ÙˆØ¯ Ø­Ø±ÙˆÙ
+#         if not re.search(r'[a-zA-ZØ¢-ÛŒ]', password1):
+#             raise ValidationError("Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¨Ø§ÛŒØ¯ Ø´Ø§Ù…Ù„ Ø­Ø¯Ø§Ù‚Ù„ ÛŒÚ© Ø­Ø±Ù Ø¨Ø§Ø´Ø¯.")
 #
-#         # بررسی وجود اعداد
+#         # Ø¨Ø±Ø±Ø³ÛŒ ÙˆØ¬ÙˆØ¯ Ø§Ø¹Ø¯Ø§Ø¯
 #         if not re.search(r'\d', password1):
-#             raise ValidationError("رمز عبور باید شامل حداقل یک عدد باشد.")
+#             raise ValidationError("Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¨Ø§ÛŒØ¯ Ø´Ø§Ù…Ù„ Ø­Ø¯Ø§Ù‚Ù„ ÛŒÚ© Ø¹Ø¯Ø¯ Ø¨Ø§Ø´Ø¯.")
 #
 #         return password1
 #
 #     def clean(self):
-#         cleaned_data = super().clean()
-#         password1 = cleaned_data.get('new_password1')
-#         password2 = cleaned_data.get('new_password2')
-#
-#         if password1 and password2 and password1 != password2:
-#             raise ValidationError({
-#                 'new_password2': 'رمز عبورهای وارد شده یکسان نیستند'
-#             })
-#
-#         return cleaned_data
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+
+        if password and confirm_password and password != confirm_password:
+            self.add_error('confirm_password', _('Passwords do not match.'))
+
+        return cleaned_data
 #
 # class UserProfileForm(forms.ModelForm):
 #     """
-#     فرم سفارشی برای ویرایش پروفایل کاربر
+#     ÙØ±Ù… Ø³ÙØ§Ø±Ø´ÛŒ Ø¨Ø±Ø§ÛŒ ÙˆÛŒØ±Ø§ÛŒØ´ Ù¾Ø±ÙˆÙØ§ÛŒÙ„ Ú©Ø§Ø±Ø¨Ø±
 #     """
 #     class Meta:
-#         model = UserProfile  # تغییر از CustomUser به UserProfile
+#         model = UserProfile  # ØªØºÛŒÛŒØ± Ø§Ø² CustomUser Ø¨Ù‡ UserProfile
 #         fields = ['first_name', 'last_name', 'birth_date', 'avatar', 'country',
 #                   'province', 'city', 'address', 'postal_code', 'email',
 #                   'emergency_contact', 'email_notifications', 'sms_notifications']
 #         labels = {
-#             'first_name': _('نام'),
-#             'last_name': _('نام خانوادگی'),
-#             'email': _('ایمیل'),
+#             'first_name': _('Ù†Ø§Ù…'),
+#             'last_name': _('Ù†Ø§Ù… Ø®Ø§Ù†ÙˆØ§Ø¯Ú¯ÛŒ'),
+#             'email': _('Ø§ÛŒÙ…ÛŒÙ„'),
 #         }
 #         widgets = {
 #             'first_name': forms.TextInput(attrs={
 #                 'class': 'form-control',
-#                 'placeholder': 'نام خود را وارد کنید'
+#                 'placeholder': 'Ù†Ø§Ù… Ø®ÙˆØ¯ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯'
 #             }),
 #             'last_name': forms.TextInput(attrs={
 #                 'class': 'form-control',
-#                 'placeholder': 'نام خانوادگی خود را وارد کنید'
+#                 'placeholder': 'Ù†Ø§Ù… Ø®Ø§Ù†ÙˆØ§Ø¯Ú¯ÛŒ Ø®ÙˆØ¯ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯'
 #             }),
 #             'email': forms.EmailInput(attrs={
 #                 'class': 'form-control',
-#                 'placeholder': 'ایمیل خود را وارد کنید'
+#                 'placeholder': 'Ø§ÛŒÙ…ÛŒÙ„ Ø®ÙˆØ¯ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯'
 #             }),
 #         }
 #         error_messages = {
 #             'first_name': {
-#                 'max_length': 'نام نمی‌تواند بیش از ۱۵۰ کاراکتر باشد'
+#                 'max_length': 'Ù†Ø§Ù… Ù†Ù…ÛŒâ€ŒØªÙˆØ§Ù†Ø¯ Ø¨ÛŒØ´ Ø§Ø² Û±ÛµÛ° Ú©Ø§Ø±Ø§Ú©ØªØ± Ø¨Ø§Ø´Ø¯'
 #             },
 #             'last_name': {
-#                 'max_length': 'نام خانوادگی نمی‌تواند بیش از ۱۵۰ کاراکتر باشد'
+#                 'max_length': 'Ù†Ø§Ù… Ø®Ø§Ù†ÙˆØ§Ø¯Ú¯ÛŒ Ù†Ù…ÛŒâ€ŒØªÙˆØ§Ù†Ø¯ Ø¨ÛŒØ´ Ø§Ø² Û±ÛµÛ° Ú©Ø§Ø±Ø§Ú©ØªØ± Ø¨Ø§Ø´Ø¯'
 #             },
 #             'email': {
-#                 'invalid': 'فرمت ایمیل نامعتبر است'
+#                 'invalid': 'ÙØ±Ù…Øª Ø§ÛŒÙ…ÛŒÙ„ Ù†Ø§Ù…Ø¹ØªØ¨Ø± Ø§Ø³Øª'
 #             }
 #         }
 #
 #     def clean_email(self):
 #         email = self.cleaned_data.get('email')
 #         if email and User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
-#             raise ValidationError("این ایمیل قبلاً ثبت شده است")
+#             raise ValidationError("Ø§ÛŒÙ† Ø§ÛŒÙ…ÛŒÙ„ Ù‚Ø¨Ù„Ø§Ù‹ Ø«Ø¨Øª Ø´Ø¯Ù‡ Ø§Ø³Øª")
 #         return email
 #
 #
 # class ProfileEditForm(forms.ModelForm):
-#     # اعتبارسنجی اختیاری برای کد پستی
+#     # Ø§Ø¹ØªØ¨Ø§Ø±Ø³Ù†Ø¬ÛŒ Ø§Ø®ØªÛŒØ§Ø±ÛŒ Ø¨Ø±Ø§ÛŒ Ú©Ø¯ Ù¾Ø³ØªÛŒ
 #     postal_code_validator = RegexValidator(
 #         regex=r'^\d{10}$',
-#         message='کد پستی باید 10 رقم باشد.',
+#         message='Ú©Ø¯ Ù¾Ø³ØªÛŒ Ø¨Ø§ÛŒØ¯ 10 Ø±Ù‚Ù… Ø¨Ø§Ø´Ø¯.',
 #         code='invalid_postal_code'
 #     )
 #
@@ -476,49 +474,49 @@ class PasswordResetRequestForm(forms.Form):
 #         widgets = {
 #             'first_name': forms.TextInput(attrs={
 #                 'class': 'form-control',
-#                 'placeholder': 'نام'
+#                 'placeholder': 'Ù†Ø§Ù…'
 #             }),
 #             'last_name': forms.TextInput(attrs={
 #                 'class': 'form-control',
-#                 'placeholder': 'نام خانوادگی'
+#                 'placeholder': 'Ù†Ø§Ù… Ø®Ø§Ù†ÙˆØ§Ø¯Ú¯ÛŒ'
 #             }),
 #             'birth_date': forms.DateInput(attrs={
 #                 'class': 'form-control',
 #                 'type': 'date',
-#                 'placeholder': 'تاریخ تولد'
+#                 'placeholder': 'ØªØ§Ø±ÛŒØ® ØªÙˆÙ„Ø¯'
 #             }),
 #             'avatar': forms.ClearableFileInput(attrs={
 #                 'class': 'form-control'
 #             }),
 #             'country': forms.Select(attrs={
 #                 'class': 'form-control',
-#                 'placeholder': 'کشور'
+#                 'placeholder': 'Ú©Ø´ÙˆØ±'
 #             }),
 #             'province': forms.TextInput(attrs={
 #                 'class': 'form-control',
-#                 'placeholder': 'استان'
+#                 'placeholder': 'Ø§Ø³ØªØ§Ù†'
 #             }),
 #             'city': forms.TextInput(attrs={
 #                 'class': 'form-control',
-#                 'placeholder': 'شهر'
+#                 'placeholder': 'Ø´Ù‡Ø±'
 #             }),
 #             'address': forms.Textarea(attrs={
 #                 'class': 'form-control',
 #                 'rows': 3,
-#                 'placeholder': 'آدرس کامل'
+#                 'placeholder': 'Ø¢Ø¯Ø±Ø³ Ú©Ø§Ù…Ù„'
 #             }),
 #             'postal_code': forms.TextInput(attrs={
 #                 'class': 'form-control',
-#                 'placeholder': 'کد پستی',
+#                 'placeholder': 'Ú©Ø¯ Ù¾Ø³ØªÛŒ',
 #                 'maxlength': 10
 #             }),
 #             'email': forms.EmailInput(attrs={
 #                 'class': 'form-control',
-#                 'placeholder': 'ایمیل'
+#                 'placeholder': 'Ø§ÛŒÙ…ÛŒÙ„'
 #             }),
 #             'emergency_contact': forms.TextInput(attrs={
 #                 'class': 'form-control',
-#                 'placeholder': 'شماره تماس اضطراری'
+#                 'placeholder': 'Ø´Ù…Ø§Ø±Ù‡ ØªÙ…Ø§Ø³ Ø§Ø¶Ø·Ø±Ø§Ø±ÛŒ'
 #             }),
 #             'email_notifications': forms.CheckboxInput(attrs={
 #                 'class': 'form-check-input'
@@ -528,62 +526,62 @@ class PasswordResetRequestForm(forms.Form):
 #             }),
 #         }
 #         labels = {
-#             'first_name': _('نام'),
-#             'last_name': _('نام خانوادگی'),
-#             'birth_date': _('تاریخ تولد'),
-#             'avatar': _('تصویر پروفایل'),
-#             'country': _('کشور'),
-#             'province': _('استان'),
-#             'city': _('شهر'),
-#             'address': _('آدرس'),
-#             'postal_code': _('کد پستی'),
-#             'email': _('ایمیل'),
-#             'emergency_contact': _('تماس اضطراری'),
-#             'email_notifications': _('اعلان‌های ایمیلی'),
-#             'sms_notifications': _('اعلان‌های پیامکی'),
+#             'first_name': _('Ù†Ø§Ù…'),
+#             'last_name': _('Ù†Ø§Ù… Ø®Ø§Ù†ÙˆØ§Ø¯Ú¯ÛŒ'),
+#             'birth_date': _('ØªØ§Ø±ÛŒØ® ØªÙˆÙ„Ø¯'),
+#             'avatar': _('ØªØµÙˆÛŒØ± Ù¾Ø±ÙˆÙØ§ÛŒÙ„'),
+#             'country': _('Ú©Ø´ÙˆØ±'),
+#             'province': _('Ø§Ø³ØªØ§Ù†'),
+#             'city': _('Ø´Ù‡Ø±'),
+#             'address': _('Ø¢Ø¯Ø±Ø³'),
+#             'postal_code': _('Ú©Ø¯ Ù¾Ø³ØªÛŒ'),
+#             'email': _('Ø§ÛŒÙ…ÛŒÙ„'),
+#             'emergency_contact': _('ØªÙ…Ø§Ø³ Ø§Ø¶Ø·Ø±Ø§Ø±ÛŒ'),
+#             'email_notifications': _('Ø§Ø¹Ù„Ø§Ù†â€ŒÙ‡Ø§ÛŒ Ø§ÛŒÙ…ÛŒÙ„ÛŒ'),
+#             'sms_notifications': _('Ø§Ø¹Ù„Ø§Ù†â€ŒÙ‡Ø§ÛŒ Ù¾ÛŒØ§Ù…Ú©ÛŒ'),
 #         }
 #         help_texts = {
-#             'avatar': _('تصویری با کیفیت مناسب انتخاب کنید'),
-#             'email': _('ایمیل خود را برای دریافت اطلاعیه‌ها وارد کنید'),
-#             'emergency_contact': _('شماره تماسی برای مواقع ضروری'),
+#             'avatar': _('ØªØµÙˆÛŒØ±ÛŒ Ø¨Ø§ Ú©ÛŒÙÛŒØª Ù…Ù†Ø§Ø³Ø¨ Ø§Ù†ØªØ®Ø§Ø¨ Ú©Ù†ÛŒØ¯'),
+#             'email': _('Ø§ÛŒÙ…ÛŒÙ„ Ø®ÙˆØ¯ Ø±Ø§ Ø¨Ø±Ø§ÛŒ Ø¯Ø±ÛŒØ§ÙØª Ø§Ø·Ù„Ø§Ø¹ÛŒÙ‡â€ŒÙ‡Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯'),
+#             'emergency_contact': _('Ø´Ù…Ø§Ø±Ù‡ ØªÙ…Ø§Ø³ÛŒ Ø¨Ø±Ø§ÛŒ Ù…ÙˆØ§Ù‚Ø¹ Ø¶Ø±ÙˆØ±ÛŒ'),
 #         }
 #
 #     def __init__(self, *args, **kwargs):
-#         # خارج کردن پارامتر user از kwargs قبل از فراخوانی super
+#         # Ø®Ø§Ø±Ø¬ Ú©Ø±Ø¯Ù† Ù¾Ø§Ø±Ø§Ù…ØªØ± user Ø§Ø² kwargs Ù‚Ø¨Ù„ Ø§Ø² ÙØ±Ø§Ø®ÙˆØ§Ù†ÛŒ super
 #         self.user = kwargs.pop('user', None)
 #         super().__init__(*args, **kwargs)
 #
-#         # اضافه کردن اعتبارسنجی به فیلد postal_code
+#         # Ø§Ø¶Ø§ÙÙ‡ Ú©Ø±Ø¯Ù† Ø§Ø¹ØªØ¨Ø§Ø±Ø³Ù†Ø¬ÛŒ Ø¨Ù‡ ÙÛŒÙ„Ø¯ postal_code
 #         self.fields['postal_code'].validators.append(self.postal_code_validator)
 #
-#         # غیرفعال کردن فیلد ایمیل اگر قبلاً پر شده است
+#         # ØºÛŒØ±ÙØ¹Ø§Ù„ Ú©Ø±Ø¯Ù† ÙÛŒÙ„Ø¯ Ø§ÛŒÙ…ÛŒÙ„ Ø§Ú¯Ø± Ù‚Ø¨Ù„Ø§Ù‹ Ù¾Ø± Ø´Ø¯Ù‡ Ø§Ø³Øª
 #         if self.instance and self.instance.email:
 #             self.fields['email'].disabled = True
-#             self.fields['email'].help_text = _('برای تغییر ایمیل با پشتیبانی تماس بگیرید')
+#             self.fields['email'].help_text = _('Ø¨Ø±Ø§ÛŒ ØªØºÛŒÛŒØ± Ø§ÛŒÙ…ÛŒÙ„ Ø¨Ø§ Ù¾Ø´ØªÛŒØ¨Ø§Ù†ÛŒ ØªÙ…Ø§Ø³ Ø¨Ú¯ÛŒØ±ÛŒØ¯')
 #
 #     def clean_postal_code(self):
 #         postal_code = self.cleaned_data.get('postal_code')
 #         if postal_code and len(postal_code) != 10:
-#             raise forms.ValidationError(_('کد پستی باید دقیقاً 10 رقم باشد'))
+#             raise forms.ValidationError(_('Ú©Ø¯ Ù¾Ø³ØªÛŒ Ø¨Ø§ÛŒØ¯ Ø¯Ù‚ÛŒÙ‚Ø§Ù‹ 10 Ø±Ù‚Ù… Ø¨Ø§Ø´Ø¯'))
 #         return postal_code
 #
 #     def clean_emergency_contact(self):
 #         emergency_contact = self.cleaned_data.get('emergency_contact')
 #         if emergency_contact and not emergency_contact.isdigit():
-#             raise forms.ValidationError(_('شماره تماس اضطراری باید فقط شامل اعداد باشد'))
+#             raise forms.ValidationError(_('Ø´Ù…Ø§Ø±Ù‡ ØªÙ…Ø§Ø³ Ø§Ø¶Ø·Ø±Ø§Ø±ÛŒ Ø¨Ø§ÛŒØ¯ ÙÙ‚Ø· Ø´Ø§Ù…Ù„ Ø§Ø¹Ø¯Ø§Ø¯ Ø¨Ø§Ø´Ø¯'))
 #         return emergency_contact
 #
 #
 # def _handle_invalid_form(self, request, form):
-#     """مدیریت فرم نامعتبر با پیام‌های دقیق‌تر"""
+#     """Ù…Ø¯ÛŒØ±ÛŒØª ÙØ±Ù… Ù†Ø§Ù…Ø¹ØªØ¨Ø± Ø¨Ø§ Ù¾ÛŒØ§Ù…â€ŒÙ‡Ø§ÛŒ Ø¯Ù‚ÛŒÙ‚â€ŒØªØ±"""
 #     if 'phone' in form.errors:
 #         if 'unique' in form.errors['phone']:
-#             messages.error(request, 'این شماره تلفن قبلاً ثبت شده است.')
+#             messages.error(request, 'Ø§ÛŒÙ† Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù‚Ø¨Ù„Ø§Ù‹ Ø«Ø¨Øª Ø´Ø¯Ù‡ Ø§Ø³Øª.')
 #         else:
-#             messages.error(request, 'لطفاً شماره تلفن معتبر وارد کنید.')
+#             messages.error(request, 'Ù„Ø·ÙØ§Ù‹ Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù…Ø¹ØªØ¨Ø± ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯.')
 #
 #     if 'password' in form.errors:
-#         messages.error(request, 'رمز عبور باید حداقل ۸ کاراکتر و شامل حروف و اعداد باشد.')
+#         messages.error(request, 'Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø¨Ø§ÛŒØ¯ Ø­Ø¯Ø§Ù‚Ù„ Û¸ Ú©Ø§Ø±Ø§Ú©ØªØ± Ùˆ Ø´Ø§Ù…Ù„ Ø­Ø±ÙˆÙ Ùˆ Ø§Ø¹Ø¯Ø§Ø¯ Ø¨Ø§Ø´Ø¯.')
 #
 #     return render(request, self.template_name, {'form': form})
 #
@@ -594,11 +592,11 @@ class PasswordResetRequestForm(forms.Form):
 # class CustomUserCreationForm(UserCreationForm):
 #     class Meta(UserCreationForm.Meta):
 #         model = CustomUser
-#         fields = ('phone',)  # فقط شماره تلفن برای ایجاد کاربر
+#         fields = ('phone',)  # ÙÙ‚Ø· Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ø¨Ø±Ø§ÛŒ Ø§ÛŒØ¬Ø§Ø¯ Ú©Ø§Ø±Ø¨Ø±
 #
 #     def __init__(self, *args, **kwargs):
 #         super().__init__(*args, **kwargs)
-#         # حذف فیلد username از فرم
+#         # Ø­Ø°Ù ÙÛŒÙ„Ø¯ username Ø§Ø² ÙØ±Ù…
 #         if 'username' in self.fields:
 #             del self.fields['username']
 #
@@ -609,19 +607,19 @@ class PasswordResetRequestForm(forms.Form):
 #
 #     def __init__(self, *args, **kwargs):
 #         super().__init__(*args, **kwargs)
-#         # حذف فیلد username از فرم
+#         # Ø­Ø°Ù ÙÛŒÙ„Ø¯ username Ø§Ø² ÙØ±Ù…
 #         if 'username' in self.fields:
 #             del self.fields['username']
 #
 #
 # class ChangePhoneNumberForm(forms.Form):
 #     """
-#     فرم تغییر شماره تلفن
+#     ÙØ±Ù… ØªØºÛŒÛŒØ± Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ†
 #     """
 #     new_phone_number = forms.CharField(
 #         max_length=15,
 #         validators=[validate_iranian_mobile],
-#         label=_('شماره تلفن جدید'),
+#         label=_('Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ø¬Ø¯ÛŒØ¯'),
 #         widget=forms.TextInput(attrs={
 #             'placeholder': '09xxxxxxxxx',
 #             'class': 'form-control'
@@ -635,25 +633,25 @@ class PasswordResetRequestForm(forms.Form):
 #     def clean_new_phone_number(self):
 #         new_phone = self.cleaned_data['new_phone_number']
 #
-#         # بررسی تکراری نبودن شماره
+#         # Ø¨Ø±Ø±Ø³ÛŒ ØªÚ©Ø±Ø§Ø±ÛŒ Ù†Ø¨ÙˆØ¯Ù† Ø´Ù…Ø§Ø±Ù‡
 #         if CustomUser.objects.filter(phone_number=new_phone).exclude(pk=self.user.pk).exists():
-#             raise forms.ValidationError(_('این شماره تلفن قبلاً ثبت شده است.'))
+#             raise forms.ValidationError(_('Ø§ÛŒÙ† Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù‚Ø¨Ù„Ø§Ù‹ Ø«Ø¨Øª Ø´Ø¯Ù‡ Ø§Ø³Øª.'))
 #
-#         # بررسی اینکه شماره جدید با شماره فعلی متفاوت باشد
+#         # Ø¨Ø±Ø±Ø³ÛŒ Ø§ÛŒÙ†Ú©Ù‡ Ø´Ù…Ø§Ø±Ù‡ Ø¬Ø¯ÛŒØ¯ Ø¨Ø§ Ø´Ù…Ø§Ø±Ù‡ ÙØ¹Ù„ÛŒ Ù…ØªÙØ§ÙˆØª Ø¨Ø§Ø´Ø¯
 #         if self.user and new_phone == self.user.phone_number:
-#             raise forms.ValidationError(_('شماره جدید با شماره فعلی یکسان است.'))
+#             raise forms.ValidationError(_('Ø´Ù…Ø§Ø±Ù‡ Ø¬Ø¯ÛŒØ¯ Ø¨Ø§ Ø´Ù…Ø§Ø±Ù‡ ÙØ¹Ù„ÛŒ ÛŒÚ©Ø³Ø§Ù† Ø§Ø³Øª.'))
 #
 #         return new_phone
 #
 #
 # class VerifyPhoneChangeForm(forms.Form):
 #     """
-#     فرم تأیید کد OTP برای تغییر شماره تلفن
+#     ÙØ±Ù… ØªØ£ÛŒÛŒØ¯ Ú©Ø¯ OTP Ø¨Ø±Ø§ÛŒ ØªØºÛŒÛŒØ± Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ†
 #     """
 #     verification_code = forms.CharField(
 #         max_length=6,
 #         min_length=6,
-#         label=_('کد تأیید'),
+#         label=_('Ú©Ø¯ ØªØ£ÛŒÛŒØ¯'),
 #         widget=forms.TextInput(attrs={
 #             'placeholder': '123456',
 #             'class': 'form-control',
@@ -662,7 +660,7 @@ class PasswordResetRequestForm(forms.Form):
 #         validators=[
 #             RegexValidator(
 #                 regex='^[0-9]{6}$',
-#                 message=_('کد تأیید باید ۶ رقم عددی باشد.')
+#                 message=_('Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ Ø¨Ø§ÛŒØ¯ Û¶ Ø±Ù‚Ù… Ø¹Ø¯Ø¯ÛŒ Ø¨Ø§Ø´Ø¯.')
 #             )
 #         ]
 #     )
@@ -678,12 +676,12 @@ class PasswordResetRequestForm(forms.Form):
 #
 # class ChangePhoneNumberForm(forms.Form):
 #     """
-#     فرم تغییر شماره تلفن
+#     ÙØ±Ù… ØªØºÛŒÛŒØ± Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ†
 #     """
 #     new_phone_number = forms.CharField(
 #         max_length=15,
 #         validators=[validate_iranian_mobile],
-#         label=_('شماره تلفن جدید'),
+#         label=_('Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ø¬Ø¯ÛŒØ¯'),
 #         widget=forms.TextInput(attrs={
 #             'placeholder': '09xxxxxxxxx',
 #             'class': 'form-control'
@@ -697,25 +695,25 @@ class PasswordResetRequestForm(forms.Form):
 #     def clean_new_phone_number(self):
 #         new_phone = self.cleaned_data['new_phone_number']
 #
-#         # بررسی تکراری نبودن شماره
+#         # Ø¨Ø±Ø±Ø³ÛŒ ØªÚ©Ø±Ø§Ø±ÛŒ Ù†Ø¨ÙˆØ¯Ù† Ø´Ù…Ø§Ø±Ù‡
 #         if CustomUser.objects.filter(phone_number=new_phone).exclude(pk=self.user.pk).exists():
-#             raise forms.ValidationError(_('این شماره تلفن قبلاً ثبت شده است.'))
+#             raise forms.ValidationError(_('Ø§ÛŒÙ† Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù‚Ø¨Ù„Ø§Ù‹ Ø«Ø¨Øª Ø´Ø¯Ù‡ Ø§Ø³Øª.'))
 #
-#         # بررسی اینکه شماره جدید با شماره فعلی متفاوت باشد
+#         # Ø¨Ø±Ø±Ø³ÛŒ Ø§ÛŒÙ†Ú©Ù‡ Ø´Ù…Ø§Ø±Ù‡ Ø¬Ø¯ÛŒØ¯ Ø¨Ø§ Ø´Ù…Ø§Ø±Ù‡ ÙØ¹Ù„ÛŒ Ù…ØªÙØ§ÙˆØª Ø¨Ø§Ø´Ø¯
 #         if self.user and new_phone == self.user.phone_number:
-#             raise forms.ValidationError(_('شماره جدید با شماره فعلی یکسان است.'))
+#             raise forms.ValidationError(_('Ø´Ù…Ø§Ø±Ù‡ Ø¬Ø¯ÛŒØ¯ Ø¨Ø§ Ø´Ù…Ø§Ø±Ù‡ ÙØ¹Ù„ÛŒ ÛŒÚ©Ø³Ø§Ù† Ø§Ø³Øª.'))
 #
 #         return new_phone
 #
 #
 # class VerifyPhoneChangeForm(forms.Form):
 #     """
-#     فرم تأیید کد OTP برای تغییر شماره تلفن
+#     ÙØ±Ù… ØªØ£ÛŒÛŒØ¯ Ú©Ø¯ OTP Ø¨Ø±Ø§ÛŒ ØªØºÛŒÛŒØ± Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ†
 #     """
 #     verification_code = forms.CharField(
 #         max_length=6,
 #         min_length=6,
-#         label=_('کد تأیید'),
+#         label=_('Ú©Ø¯ ØªØ£ÛŒÛŒØ¯'),
 #         widget=forms.TextInput(attrs={
 #             'placeholder': '123456',
 #             'class': 'form-control',
@@ -724,7 +722,7 @@ class PasswordResetRequestForm(forms.Form):
 #         validators=[
 #             RegexValidator(
 #                 regex='^[0-9]{6}$',
-#                 message=_('کد تأیید باید ۶ رقم عددی باشد.')
+#                 message=_('Ú©Ø¯ ØªØ£ÛŒÛŒØ¯ Ø¨Ø§ÛŒØ¯ Û¶ Ø±Ù‚Ù… Ø¹Ø¯Ø¯ÛŒ Ø¨Ø§Ø´Ø¯.')
 #             )
 #         ]
 #     )
@@ -768,7 +766,9 @@ class PasswordResetRequestForm(forms.Form):
 #     def clean_email(self):
 #         email = self.cleaned_data.get('email')
 #         if email:
-#             # بررسی یکتا بودن ایمیل (به جز برای کاربر فعلی)
+#             # Ø¨Ø±Ø±Ø³ÛŒ ÛŒÚ©ØªØ§ Ø¨ÙˆØ¯Ù† Ø§ÛŒÙ…ÛŒÙ„ (Ø¨Ù‡ Ø¬Ø² Ø¨Ø±Ø§ÛŒ Ú©Ø§Ø±Ø¨Ø± ÙØ¹Ù„ÛŒ)
 #             if UserProfile.objects.exclude(user=self.user).filter(email=email).exists():
-#                 raise forms.ValidationError('این ایمیل قبلاً ثبت شده است.')
+#                 raise forms.ValidationError('Ø§ÛŒÙ† Ø§ÛŒÙ…ÛŒÙ„ Ù‚Ø¨Ù„Ø§Ù‹ Ø«Ø¨Øª Ø´Ø¯Ù‡ Ø§Ø³Øª.')
 #         return email
+
+

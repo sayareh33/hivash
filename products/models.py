@@ -298,6 +298,61 @@ class Product(models.Model):
             return int(self.unit_price * (1 - discount / Decimal('100')))
         return self.unit_price
 
+    def _get_prefetched_images(self):
+        """
+        Return the prefetched images list if available, otherwise query the DB.
+        This keeps image selection fast when views call prefetch_related('images').
+        """
+        prefetched = getattr(self, '_prefetched_objects_cache', {})
+        images = prefetched.get('images')
+        if images is None:
+            return list(self.images.all())
+        return list(images)
+
+    def get_primary_image_file(self):
+        """
+        Return the main image that should be displayed for this product.
+        Priority order:
+            1. The dedicated cover image stored on the product itself.
+            2. Any related image that is flagged as main.
+            3. The first related image (if any exist).
+        """
+        if self.image:
+            return self.image
+
+        images = self._get_prefetched_images()
+        for img in images:
+            related_image = getattr(img, 'image', None)
+            if getattr(img, 'main', False) and related_image:
+                return related_image
+
+        for img in images:
+            related_image = getattr(img, 'image', None)
+            if related_image:
+                return related_image
+
+        return None
+
+    def get_primary_image_url(self):
+        """
+        Convenience helper for templates or services that only need the URL.
+        """
+        image_file = self.get_primary_image_file()
+        if image_file:
+            try:
+                return image_file.url
+            except ValueError:
+                return ''
+        return ''
+
+    @property
+    def primary_image(self):
+        return self.get_primary_image_file()
+
+    @property
+    def primary_image_url(self):
+        return self.get_primary_image_url()
+
     @classmethod
     def search(cls, query):
         return cls.objects.filter(

@@ -1,12 +1,13 @@
-/* ===============================
+﻿/* ===============================
    Reset و پایه
 =============================== */
 body {
-    font-family: 'Yekan', 'Segoe UI', Tahoma, sans-serif;
+    font-family: 'Vazir', 'Segoe UI', Tahoma, sans-serif;
     overflow-x: hidden;
     line-height: 1.6;
     background: #f9f9f9;
     color: #263238;
+    padding-top: 3cm;
 }
 
 img {
@@ -19,16 +20,26 @@ img {
 =============================== */
 .navbar.fixed-top {
     transition: background 0.3s ease;
+    min-height: 3cm;
+    display: flex;
+    align-items: stretch;
 }
 
 .navbar .navbar-nav .nav-link {
-    font-weight: 500;
-    font-size: 1rem;
+    font-weight: 600;
+    font-size: 1.1rem;
     transition: color 0.2s ease;
+    color: #5d4037;
 }
 
-.navbar .navbar-nav .nav-link:hover {
-    color: #333;
+.navbar .navbar-nav .nav-link:hover,
+.navbar .navbar-nav .nav-link:focus {
+    color: #ff6f61;
+}
+
+.navbar .navbar-nav .nav-link.active,
+.navbar .navbar-nav .nav-link.show {
+    color: #5d4037;
 }
 
 .navbar .dropdown-menu {
@@ -50,7 +61,8 @@ img {
 /* ===============================
    دکمه‌ها و گرادینت
 =============================== */
-.btn-primary, .product-btn {
+.btn-primary,
+.product-btn {
     background: linear-gradient(to left, #00ff7f, #fff200);
     border: none;
     color: #000;
@@ -62,35 +74,46 @@ img {
     display: inline-block;
 }
 
-.btn-primary:hover, .product-btn:hover {
+.btn-primary:hover,
+.product-btn:hover {
     filter: brightness(0.9);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* ===============================
    کارت‌ها و محصولات
 =============================== */
-.card, .product-card, .blog-card, .charity-card, .intro-card {
+.card,
+.product-card,
+.blog-card,
+.charity-card,
+.intro-card {
     border-radius: 0.75rem;
     background: #fff;
     overflow: hidden;
     transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
-.card:hover, .product-card:hover, .blog-card:hover, .charity-card:hover, .intro-card:hover {
+.card:hover,
+.product-card:hover,
+.blog-card:hover,
+.charity-card:hover,
+.intro-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
-.product-img, .blog-img {
+.product-img,
+.blog-img {
     height: 250px;
     object-fit: cover;
     transition: transform 0.5s ease;
 }
 
-.product-card:hover .product-img, .blog-card:hover .blog-img {
+.product-card:hover .product-img,
+.blog-card:hover .blog-img {
     transform: scale(1.05);
 }
 
@@ -107,6 +130,7 @@ img {
 img.logo-image {
     transition: all 0.3s ease;
 }
+
 img.logo-image:hover {
     transform: scale(1.05);
 }
@@ -121,6 +145,7 @@ img.logo-image:hover {
     display: inline-block;
     margin-bottom: 15px;
 }
+
 .section-title h2::after {
     content: '';
     position: absolute;
@@ -144,9 +169,16 @@ img.logo-image:hover {
    انیمیشن Fade-in
 =============================== */
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
+
 .fade-in-up {
     opacity: 0;
     transform: translateY(30px);
@@ -157,19 +189,280 @@ img.logo-image:hover {
    Responsive
 =============================== */
 @media (max-width: 1200px) {
-    .hero-slider { height: 450px; }
+    .hero-slider {
+        height: 450px;
+    }
 }
+
 @media (max-width: 992px) {
-    .hero-slider { height: 400px; }
-    .product-img, .blog-img { height: 220px; }
+    .hero-slider {
+        height: 400px;
+    }
+
+    .product-img,
+    .blog-img {
+        height: 220px;
+    }
 }
+
 @media (max-width: 768px) {
-    .hero-slider { height: 350px; }
-    .product-img, .blog-img { height: 200px; }
-    .product-btn { width: 100%; }
+    .hero-slider {
+        height: 350px;
+    }
+
+    .product-img,
+    .blog-img {
+        height: 200px;
+    }
+
+    .product-btn {
+        width: 100%;
+    }
 }
+
 @media (max-width: 576px) {
-    .hero-slider { height: 300px; }
-    .product-img, .blog-img { height: 180px; }
-    .product-btn { padding: 8px 12px; font-size: 0.85rem; }
+    .hero-slider {
+        height: 300px;
+    }
+
+    .product-img,
+    .blog-img {
+        height: 180px;
+    }
+
+    .product-btn {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
 }
+
+/* ===============================
+   سفارشی سازی ناوبار
+=============================== */
+.brand-link {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-right: 0;
+}
+
+.navbar .navbar-brand {
+    margin-inline-end: 0;
+}
+
+.brand-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-inline-end: 0;
+    transition: color 0.2s ease;
+    color: #5d4037;
+}
+
+.brand-link:hover .brand-title,
+.brand-link:focus .brand-title,
+.brand-title:hover,
+.brand-title:focus {
+    color: #ff6f61 !important;
+}
+
+.brand-logo {
+    height: 44px;
+    object-fit: contain;
+    margin-inline-start: 0;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.brand-logo:hover,
+.brand-logo:focus {
+    transform: translateY(-1px) scale(1.03);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+}
+
+.main-menu {
+    margin-right: 0;
+}
+
+.navbar-tools {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+@media (min-width: 992px) {
+    .navbar-tools {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.6rem;
+        margin-inline-start: auto;
+        width: auto;
+    }
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    justify-content: flex-start;
+    direction: ltr;
+}
+
+@media (min-width: 992px) {
+    .header-actions {
+        gap: 0.5rem;
+    }
+}
+
+.toolbar-btn {
+    border: none;
+    background: none;
+    color: #ffffff;
+    padding: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.toolbar-btn:hover,
+.toolbar-btn:focus {
+    color: #ff6f61;
+    transform: translateY(-1px) scale(1.05);
+}
+
+.toolbar-btn i {
+    font-size: 1.4rem;
+}
+
+.navbar-cart-badge {
+    position: absolute;
+    top: -12px;
+    right: -16px;
+    background: #ff4d4f;
+    color: #fff;
+    font-size: 0.75rem;
+    border-radius: 999px;
+    padding: 0.15rem 0.4rem;
+    line-height: 1;
+}
+
+.search-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+@media (min-width: 992px) {
+    .search-form {
+        width: 280px;
+    }
+}
+
+.search-input {
+    border-radius: 999px;
+    padding: 0.65rem 2.5rem 0.65rem 1rem;
+}
+
+.search-btn {
+    position: absolute;
+    top: 50%;
+    right: 0.75rem;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    color: #000000;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 1.4rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.search-btn:hover,
+.search-btn:focus {
+    color: #ff6f61;
+    transform: translateY(-50%) scale(1.05);
+}
+
+.site-footer {
+    color: #5d4037;
+}
+
+.site-footer a {
+    color: #5d4037;
+    transition: color 0.2s ease;
+}
+
+.site-footer a:hover,
+.site-footer a:focus {
+    color: #ff6f61;
+}
+
+.site-footer .footer-social-link {
+    color: #1a237e;
+}
+
+.site-footer .footer-social-link:hover,
+.site-footer .footer-social-link:focus {
+    color: #ff6f61;
+}
+
+.site-footer .footer-brand-title {
+    font-size: 1rem;
+    color: #5d4037;
+}
+
+.site-footer .footer-logo {
+    height: 40px;
+    width: auto;
+}
+
+.site-footer .footer-socials {
+    align-items: center;
+}
+
+.site-footer .footer-social-link i {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.site-footer .footer-contact i {
+    color: #1a237e;
+}
+
+@media (min-width: 992px) {
+    .site-footer .footer-brand-col {
+        margin-inline-end: 0;
+        padding-inline-end: 0.7cm;
+    }
+
+    .site-footer .footer-links-col {
+        transform: translateX(-1cm);
+    }
+}
+
+.site-main {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.navbar.fixed-top .container-fluid {
+    min-height: 3cm;
+    display: flex;
+    align-items: center;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-right: 1cm;
+}
+
+.site-main > .hero-slider:first-child {
+    margin-top: -1rem;
+}
+

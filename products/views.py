@@ -64,7 +64,11 @@ class ProductListView(ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        queryset = Product.objects.filter(is_active=True, status='published').select_related('category')
+        queryset = (
+            Product.objects.filter(is_active=True, status='published')
+            .select_related('category')
+            .prefetch_related('images')
+        )
 
         # مرتب‌سازی
         sort = self.request.GET.get('sort')
@@ -90,7 +94,11 @@ class CategoryProductListView(ProductListView):
     def get_queryset(self):
         category_slug = self.kwargs.get('slug')
         self.category = Category.objects.get(slug=category_slug)
-        return Product.objects.filter(category=self.category, is_active=True, status='published')
+        return (
+            Product.objects.filter(category=self.category, is_active=True, status='published')
+            .select_related('category')
+            .prefetch_related('images')
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -103,7 +111,11 @@ class DiscountedProductsView(ProductListView):
     template_name = 'products/discounted_products.html'
 
     def get_queryset(self):
-        return Product.objects.filter(is_active=True, status='published', discount__is_active=True)
+        return (
+            Product.objects.filter(is_active=True, status='published', discount__is_active=True)
+            .select_related('category')
+            .prefetch_related('images')
+        )
 
 
 # 🔍 جستجو
@@ -115,7 +127,7 @@ class ProductSearchView(ProductListView):
             is_active=True,
             status='published'
         )
-        return queryset
+        return queryset.select_related('category').prefetch_related('images')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -190,7 +202,7 @@ class ProductDetailView(generic.DetailView):
 
 class ProductDetailView(generic.DetailView):
     model = Product
-    template_name = 'products/product_detail.html'
+    template_name = 'products/product_details.html'
     context_object_name = 'product'
 
     def get_context_data(self, **kwargs):

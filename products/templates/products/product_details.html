@@ -1,7 +1,7 @@
 {% extends '_base.html' %}
 {% load static %}
 {% load humanize %}
-
+{% load number_filters %}
 {% block title %}{{ product.title }} - فروشگاه هیوا{% endblock %}
 
 {% block extra_css %}
@@ -161,8 +161,8 @@
     <!-- تصویر محصول -->
     <div class="col-lg-5 mb-4">
       <div class="product-gallery">
-        {% if product.image %}
-          <img src="{{ product.image.url }}" alt="{{ product.title }}">
+        {% if product.primary_image_url %}
+          <img src="{{ product.primary_image_url }}" alt="{{ product.title }}">
         {% else %}
           <img src="{% static 'img/products/default.jpg' %}" alt="بدون تصویر">
         {% endif %}
@@ -176,10 +176,10 @@
 
       <div class="d-flex align-items-center mb-3">
         {% if active_discount %}
-          <span class="product-price">{{ final_price|intcomma }} تومان</span>
-          <span class="old-price ms-3">{{ product.unit_price|intcomma }} تومان</span>
+          <span class="product-price">{{ final_price|intcomma:False|translate_number }} تومان</span>
+          <span class="old-price ms-3">{{ product.unit_price|intcomma:False|translate_number }} تومان</span>
         {% else %}
-          <span class="product-price">{{ product.unit_price|intcomma }} تومان</span>
+          <span class="product-price">{{ product.unit_price|intcomma:False|translate_number}} تومان</span>
         {% endif %}
       </div>
 
@@ -279,16 +279,20 @@
     <div class="related-card flex-shrink-0" style="width: 220px;">
       <a href="{{ item.get_absolute_url }}" class="text-decoration-none text-dark">
         <div class="card shadow-sm h-100 border-0">
-          <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}">
+          {% if item.primary_image_url %}
+          <img src="{{ item.primary_image_url }}" class="card-img-top" alt="{{ item.title }}">
+          {% else %}
+          <img src="{% static 'img/products/default.jpg' %}" class="card-img-top" alt="O"O_U^U+ O�O�U^UOO�">
+          {% endif %}
           <div class="card-body text-center">
             <h6 class="fw-semibold">{{ item.title|truncatechars:40 }}</h6>
             {% if item.get_best_discount %}
               <div>
-                <span class="text-success fw-bold">{{ item.get_final_price|intcomma }} تومان</span><br>
-                <small class="text-muted text-decoration-line-through">{{ item.unit_price|intcomma }}</small>
+                <span class="text-success fw-bold">{{ item.get_final_price|intcomma:False|translate_number }} تومان</span><br>
+                <small class="text-muted text-decoration-line-through">{{ item.unit_price|intcomma:False|translate_number }}</small>
               </div>
             {% else %}
-              <span class="fw-bold text-dark">{{ item.unit_price|intcomma }} تومان</span>
+              <span class="fw-bold text-dark">{{ item.unit_price|intcomma:False|translate_number }} تومان</span>
             {% endif %}
           </div>
         </div>
@@ -312,10 +316,14 @@
     <div class="recent-card flex-shrink-0" style="width: 220px;">
       <a href="{{ item.get_absolute_url }}" class="text-decoration-none text-dark">
         <div class="card shadow-sm h-100 border-0">
-          <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}">
+          {% if item.primary_image_url %}
+          <img src="{{ item.primary_image_url }}" class="card-img-top" alt="{{ item.title }}">
+          {% else %}
+          <img src="{% static 'img/products/default.jpg' %}" class="card-img-top" alt="O"O_U^U+ O�O�U^UOO�">
+          {% endif %}
           <div class="card-body text-center">
             <h6 class="fw-semibold">{{ item.title|truncatechars:40 }}</h6>
-            <span class="fw-bold text-dark">{{ item.get_final_price|intcomma }} تومان</span>
+            <span class="fw-bold text-dark">{{ item.get_final_price|intcomma:False|translate_number }} تومان</span>
           </div>
         </div>
       </a>

@@ -1,0 +1,294 @@
+{% load i18n %}
+{% load static %}
+{% load humanize %}
+{% load persian_translation_tags %}
+
+<!-- Mini Cart Sidebar -->
+<aside class="hiva-mini-cart-sidebar" id="hivaMiniCart">
+    <div class="hiva-mini-cart-overlay" id="hivaMiniCartOverlay"></div>
+    <div class="hiva-mini-cart-container">
+        <div class="hiva-mini-cart-header">
+            <h3 class="hiva-mini-cart-title">
+                <i class="bi bi-cart3 me-2"></i>
+                سبد خرید شما
+            </h3>
+            <button class="hiva-mini-cart-close" id="hivaCloseMiniCart">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div id="miniCart" data-cart-length="{{ cart|length }}">
+    <!-- محتوای سبد خرید -->
+            <div class="hiva-mini-cart-body">
+                {% if cart and cart|length > 0 %}
+                <div class="hiva-mini-cart-items">
+                    {% for item in cart %}
+                    <div class="hiva-cart-item" data-product-id="{{ item.product_obj.id }}">
+                        <div class="hiva-cart-item-image">
+                            <a href="{{ item.product_obj.get_absolute_url }}">
+                                {% if item.product_image_url %}
+                                    <img src="{{ item.product_image_url }}" alt="{{ item.product_obj.title }}"
+                                         class="img-fluid hiva-product-img">
+                                {% else %}
+                                    <img src="{% static 'img/products/no-image.jpg' %}" alt="بدون تصویر"
+                                         class="img-fluid hiva-product-img">
+                                {% endif %}
+                            </a>
+                        </div>
+                        <div class="hiva-cart-item-details">
+                            <h4 class="hiva-cart-item-title">
+                                <a href="{{ item.product_obj.get_absolute_url }}">{{ item.product_obj.title }}</a>
+                            </h4>
+                            <div class="hiva-cart-item-meta">
+                                <span class="hiva-cart-item-price">{{ item.product_obj.unit_price|intcomma:False|translate_number }} تومان</span>
+                            </div>
+
+                            <!-- کنترل تعداد محصول -->
+                            <div class="hiva-cart-item-quantity-controls">
+                                <form method="POST" action="{% url 'carts:add_to_cart' item.product_obj.id %}" class="hiva-quantity-form">
+                                    {% csrf_token %}
+                                    <div class="input-group input-group-sm hiva-quantity-group">
+                                        <button type="button" class="btn btn-outline-secondary hiva-quantity-decrease">-</button>
+                                        <input type="number" class="form-control hiva-quantity-input" name="quantity"
+                                               value="{{ item.quantity }}" min="1" max="99">
+                                        <button type="button" class="btn btn-outline-secondary hiva-quantity-increase">+</button>
+                                        <input type="hidden" name="inplace" value="True">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="hiva-cart-item-actions">
+                            <span class="hiva-cart-item-total-price">{{ item.total_price|intcomma:False|translate_number }} تومان</span>
+                            <form action="{% url 'carts:remove_from_cart' item.product_obj.id %}" method="post" class="d-inline hiva-remove-form">
+                                {% csrf_token %}
+                                <button type="submit" class="hiva-btn-remove-item" title="حذف">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="hiva-empty-cart text-center py-5">
+                    <i class="bi bi-cart-x fs-1 text-muted mb-3"></i>
+                    <p class="text-muted">سبد خرید شما خالی است</p>
+                    <a href="{% url 'products:product_list' %}" class="btn btn-primary mt-3 hiva-continue-shopping">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        ادامه خرید
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% if cart and cart|length > 0 %}
+        <div class="hiva-mini-cart-footer">
+            <div class="hiva-cart-summary">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>تعداد کالا:</span>
+                    <span class="fw-bold">{{ cart|length }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>جمع کل:</span>
+                    <span class="fw-bold text-success">{{ cart.get_total_price|intcomma:False|translate_number }} تومان</span>
+                </div>
+            </div>
+
+            <div class="hiva-cart-buttons">
+                <a href="{% url 'carts:cart_detail' %}" class="btn btn-outline-primary w-100 mb-2 hiva-view-cart-btn">
+                    <i class="bi bi-eye me-2"></i>
+                    مشاهده سبد خرید
+                </a>
+                <a href="{% url 'orders:order_create' %}" class="btn btn-success w-100 hiva-checkout-btn">
+                    <i class="bi bi-check2-circle me-2"></i>
+                    تکمیل سفارش
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</aside>
+
+<style>
+/* Reset and namespace all classes */
+.hiva-mini-cart-sidebar {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 380px;
+    height: 100vh;
+    background: white;
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.15);
+    z-index: 9999 !important; /* افزایش چشمگیر z-index */
+    transition: right 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.hiva-mini-cart-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9998 !important;
+    display: none;
+    backdrop-filter: blur(3px);
+}
+
+/* بقیه استایل‌ها با پیشوند hiva- */
+.hiva-mini-cart-sidebar.open {
+    right: 0;
+}
+
+.hiva-mini-cart-overlay.show {
+    display: block;
+}
+
+#miniCart {
+    position: absolute !important;
+    z-index: 9999 !important;
+    top: 100%;
+    right: 0;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+/* ... بقیه استایل‌ها با پیشوند hiva- */
+</style>
+
+<script>
+// استفاده از IIFE برای جلوگیری از تداخل با اسکریپت‌های دیگر
+(function() {
+    'use strict';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // فقط اگر سایدبار در صفحه وجود دارد
+        const miniCart = document.getElementById('hivaMiniCart');
+        if (!miniCart) return;
+
+        const miniCartOverlay = document.getElementById('hivaMiniCartOverlay');
+        const closeMiniCartBtn = document.getElementById('hivaCloseMiniCart');
+        const miniCartBtn = document.querySelector('.mini-cart-btn');
+
+        function openMiniCart() {
+            miniCart.classList.add('open');
+            miniCartOverlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMiniCart() {
+            miniCart.classList.remove('open');
+            miniCartOverlay.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Event listenerها با استفاده از event delegation
+        document.addEventListener('click', function(e) {
+            // باز کردن سایدبار
+            if (e.target.closest('.mini-cart-btn')) {
+                e.preventDefault();
+                openMiniCart();
+            }
+
+            // بستن سایدبار
+            if (e.target.closest('#hivaCloseMiniCart') || e.target.id === 'hivaMiniCartOverlay') {
+                closeMiniCart();
+            }
+
+            // مدیریت دکمه‌های کم و زیاد
+            if (e.target.closest('.hiva-quantity-increase')) {
+                const input = e.target.closest('.hiva-quantity-increase').previousElementSibling;
+                if (parseInt(input.value) < parseInt(input.max)) {
+                    input.value = parseInt(input.value) + 1;
+                    input.closest('form').submit();
+                }
+            }
+
+            if (e.target.closest('.hiva-quantity-decrease')) {
+                const input = e.target.closest('.hiva-quantity-decrease').nextElementSibling;
+                if (parseInt(input.value) > parseInt(input.min)) {
+                    input.value = parseInt(input.value) - 1;
+                    input.closest('form').submit();
+                }
+            }
+        });
+
+        // بستن با کلید ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && miniCart.classList.contains('open')) {
+                closeMiniCart();
+            }
+        });
+    });
+})();
+
+
+function createBeautifulMiniCart() {
+    const miniCart = document.getElementById('miniCart');
+    const originalContent = miniCart.innerHTML;
+
+    // پاک‌سازی و ایجاد ساختار جدید
+    miniCart.innerHTML = `
+        <div style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+            margin: -25px -25px 20px -25px;
+        ">
+            <h3 style="margin: 0; font-size: 18px;">🛒 سبد خرید شما</h3>
+            <div style="font-size: 12px; opacity: 0.9;">${document.getElementById('miniCart').dataset.cartLength} آیتم</div>
+        </div>
+
+        <div id="miniCartContent" style="
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px 0;
+        ">
+            ${originalContent}
+        </div>
+
+        <div style="
+            border-top: 2px solid #e2e8f0;
+            padding-top: 15px;
+            margin-top: 15px;
+        ">
+            <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 15px;">
+                <span>جمع کل:</span>
+                <span style="color: #2c5aa0;">${miniCart.textContent.match(/[0-9,]+ تومان|[0-9,]+ ریال/)?.[0] || '۰ تومان'}</span>
+            </div>
+            <button style="
+                background: linear-gradient(45deg, #48bb78, #38a169);
+                color: white;
+                border: none;
+                padding: 12px;
+                border-radius: 8px;
+                width: 100%;
+                font-weight: bold;
+                cursor: pointer;
+                font-size: 16px;
+            ">تکمیل خرید</button>
+        </div>
+    `;
+
+    // استایل‌دهی محتوای اصلی
+    const content = document.getElementById('miniCartContent');
+    Array.from(content.children).forEach(child => {
+        child.style.cssText = `
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        `;
+    });
+}
+
+createBeautifulMiniCart();
+</script>

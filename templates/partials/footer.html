@@ -1,39 +1,65 @@
-{% load static i18n humanize jformat %}
+﻿{% load static %}
 
-<footer class="py-5 text-white" style="background: linear-gradient(135deg, #fff200, #00ff7f);">
+<footer class="site-footer py-5"
+        style="background: linear-gradient(135deg, #fff200 0%, #00ff7f 100%);">
     <div class="container">
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <span class="fw-bold">خانه اشتغال </span>
-                <img src="{% static 'img/hiva.png' %}" alt="خانه اشتغال" height="40">
-                <p class="mt-3">ما با هدف ایجاد فرصت‌های شغلی مناسب فعالیت می‌کنیم.</p>
-                <div class="mt-3">
-                    <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-lg"></i></a>
-                    <a href="#" class="text-white me-3"><i class="fab fa-telegram fa-lg"></i></a>
-                    <a href="#" class="text-white"><i class="fab fa-whatsapp fa-lg"></i></a>
+        <div class="row gy-4 footer-row">
+            <div class="col-md-4 footer-brand-col">
+                <div class="d-flex align-items-center gap-2 mb-3 footer-brand">
+                    <span class="fw-bold footer-brand-title">خانه</span>
+                    <img src="{% static 'img/hiva.png' %}" alt="خانه" class="footer-logo">
+                </div>
+                <p class="mb-3">
+                    ما با هدف ایجاد فرصت‌های شغلی پایدار و توانمندسازی جوامع محلی فعالیت می‌کنیم تا همراه کسب‌وکارها
+                    و خانواده‌ها باشیم.
+                </p>
+                <div class="d-flex gap-3 footer-socials">
+                    <a href="#" class="footer-social-link" aria-label="Instagram">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="footer-social-link" aria-label="Telegram">
+                        <i class="fab fa-telegram"></i>
+                    </a>
+                    <a href="#" class="footer-social-link" aria-label="WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <h5 class="fw-bold">لینک‌های سریع</h5>
-                <ul class="list-unstyled mt-3">
-                    <li><a href="{% url 'pages:home' %}" class="text-white">خانه</a></li>
-                    <li><a href="{% url 'products:product_list' %}" class="text-white">محصولات</a></li>
-                    <li><a href="{% url 'pages:aboutus' %}" class="text-white">درباره ما</a></li>
-                    <li><a href="{% url 'pages:contactus' %}" class="text-white">تماس با ما</a></li>
+
+            <div class="col-md-4 footer-links-col">
+                <h5 class="fw-bold mb-3">لینک‌های سریع</h5>
+                <ul class="list-unstyled footer-links">
+                    <li><a href="{% url 'pages:home' %}">خانه</a></li>
+                    <li><a href="{% url 'products:product_list' %}">محصولات</a></li>
+                    <li><a href="{% url 'products:product_list' %}">یاوران مهربان</a></li>
+                    <li><a href="{% url 'pages:aboutus' %}">درباره ما</a></li>
+                    <li><a href="{% url 'pages:contactus' %}">تماس با ما</a></li>
                 </ul>
             </div>
-            <div class="col-md-4 mb-4">
-                <h5 class="fw-bold">تماس با ما</h5>
-                <ul class="list-unstyled mt-3">
-                    <li><i class="fas fa-map-marker-alt me-2"></i>استان فارس، شهرستان قیر و کارزین، قیر، کوچه سه شهید</li>
-                    <li><i class="fas fa-phone me-2"></i><a href="tel:+989384501026" class="text-white">09384501026</a></li>
-                    <li><i class="fas fa-envelope me-2"></i><a href="mailto:info@hiva-eshghal.ir" class="text-white">info@hiva-eshghal.ir</a></li>
+
+            <div class="col-md-4">
+                <h5 class="fw-bold mb-3">تماس با ما</h5>
+                <ul class="list-unstyled footer-contact">
+                    <li>
+                        <i class="fas fa-map-marker-alt"></i>
+                        شهری پر از آسمانی های زمین
+                    </li>
+                    <li>
+                        <i class="fas fa-phone"></i>
+                        <a href="tel:+989384501026">09332147263</a>
+                    </li>
+                    <li>
+                        <i class="fas fa-envelope"></i>
+                        <a href="mailto:info@hiva-eshghal.ir">info@hiva-eshghal.ir</a>
+                    </li>
                 </ul>
             </div>
         </div>
-        <hr class="bg-light">
-        <div class="text-center">
-            <p>© {% now "Y" %} کلیه حقوق برای خانه اشتغال هیوا محفوظ است.</p>
-        </div>
+
+        <hr class="footer-divider my-4">
+        <p class="text-center mb-0">
+            © {% now "Y" %} تمامی حقوق برای خانه هیوا محفوظ است.
+        </p>
     </div>
 </footer>
+

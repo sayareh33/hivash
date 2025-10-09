@@ -1,13 +1,71 @@
 # accounts/views.py
-from .services.phone_change_service import PhoneChangeService
-from .services.sms_service import SMSService
+import random
+
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
+from django.http import JsonResponse
+from django.shortcuts import render
+
+from accounts.models import UserProfile, PhoneChangeHistory
+from accounts.services.phone_change import PhoneChangeService
+
 
 # accounts/services/phone_change_service.py
 from django.utils import timezone
 from datetime import timedelta
 import logging
 
+from products.models import Order
+
 logger = logging.getLogger(__name__)
+
+
+@login_required
+def profile_view(request):
+    try:
+        profile = request.user.profile
+    except UserProfile.DoesNotExist:
+        profile = UserProfile.objects.create(user=request.user)
+
+    # تصحیح: استفاده از user_profile به جای customer_id
+    orders = Order.objects.filter(user_profile=profile).order_by('-datetime_created')
+
+    # صفحه‌بندی سفارشات
+    paginator = Paginator(orders, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # محاسبه آمار خرید
+    total_orders = orders.count()
+
+    # تصحیح: فیلتر کردن سفارشات پرداخت شده کاربر جاری
+    completed_orders = orders.filter(status=Order.ORDER_STATUS_PAID).count()
+
+    # محاسبه مجموع مبلغ پرداخت شده
+    total_spent = 0
+    paid_orders = orders.filter(status=Order.ORDER_STATUS_PAID)
+    for order in paid_orders:
+        # استفاده از متد total_price که در مدل Order تعریف کردید
+        total_spent += order.total_price
+
+    # میانگین مبلغ سفارشات پرداخت شده
+    avg_order_value = total_spent / completed_orders if completed_orders > 0 else 0
+
+    # 5 سفارش اخیر برای تب خلاصه
+    recent_orders = orders[:5]
+
+    context = {
+        'profile': profile,
+        'orders': page_obj,
+        'recent_orders': recent_orders,
+        'total_orders': total_orders,
+        'completed_orders': completed_orders,
+        'total_spent': total_spent,
+        'avg_order_value': avg_order_value,
+    }
+
+    return render(request, 'accounts/profile1.html', context)
 
 
 class PhoneChangeService:
@@ -16,7 +74,7 @@ class PhoneChangeService:
         """درخواست تغییر شماره تلفن"""
         try:
             # اعتبارسنجی شماره جدید
-            from .validators import validate_iranian_mobile
+            from accounts.validators import validate_iranian_mobile
             validated_phone = validate_iranian_mobile(new_phone)
 
             # بررسی اینکه شماره جدید با شماره فعلی متفاوت است
@@ -24,7 +82,7 @@ class PhoneChangeService:
                 return False, "شماره جدید نمی‌تواند با شماره فعلی یکسان باشد"
 
             # بررسی اینکه شماره جدید قبلاً استفاده نشده باشد
-            from .models import User
+            from accounts.models import User
             if User.objects.filter(phone=validated_phone).exclude(pk=user.pk).exists():
                 return False, "این شماره قبلاً توسط کاربر دیگری ثبت شده است"
 
@@ -39,7 +97,7 @@ class PhoneChangeService:
             user.save()
 
             # ارسال OTP به شماره جدید
-            from .services.otp_service import send_sms_via_asanak
+            from accounts.services.otp_service import send_sms_via_asanak
             success = send_sms_via_asanak(validated_phone, otp_code)
 
             if success:
