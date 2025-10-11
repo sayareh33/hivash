@@ -62,18 +62,29 @@ class HomePageView(TemplateView):
         foods_products = Product.objects.none()
         bags_products = Product.objects.none()
 
-        for slug, title, url_name in (
-            ("foods", "محصولات خوراکی", "products:foods_list"),
-            ("bags", "کیف‌ها", "products:bags_list"),
+        for slug, title in (
+            ("foods", "U.O-O?U^U,OO? OrU^O?OUcUO"),
+            ("bags", "UcUOU???OU?O"),
         ):
             category = Category.objects.filter(slug=slug).first()
             if not category:
                 continue
 
+            category_ids = [category.id]
+            child_ids = list(
+                Category.objects.filter(parent=category, is_active=True).values_list("id", flat=True)
+            )
+            while child_ids:
+                category_ids.extend(child_ids)
+                child_ids = list(
+                    Category.objects.filter(parent__in=child_ids, is_active=True).values_list("id", flat=True)
+                )
+
             products = (
                 Product.objects.filter(
-                    category=category,
+                    category_id__in=category_ids,
                     is_active=True,
+                    status="published",
                     inventory__gt=0,
                 )
                 .order_by("-datetime_created")[:4]
@@ -82,7 +93,7 @@ class HomePageView(TemplateView):
             product_categories.append(
                 {
                     "name": title,
-                    "url": self._safe_reverse(url_name),
+                    "url": f"{self._safe_reverse('products:product_list')}?category={category.slug}",
                     "products": products,
                 }
             )
@@ -91,7 +102,6 @@ class HomePageView(TemplateView):
                 foods_products = products
             elif slug == "bags":
                 bags_products = products
-
         context["product_categories"] = product_categories
         context["foods_products"] = foods_products
         context["bags_products"] = bags_products
@@ -101,7 +111,7 @@ class HomePageView(TemplateView):
             context["charity"] = {
                 "title": "انجمن یاوران گل نرگس",
                 "description": "تمرکز ما حمایت همه‌جانبه از کودکان بی‌سرپرست و کم‌توان است؛ از آموزش و درمان تا معیشت و مشاوره.",
-                "url": self._safe_reverse("charity:charity", fallback="#"),
+                "url": self._safe_reverse("charity:home", fallback="#"),
                 "cards": [
                     {"title": "حمایت تحصیلی", "text": "تامین شهریه و لوازم تحریر برای دانش‌آموزان تحت پوشش."},
                     {"title": "بسته‌های معیشتی", "text": "توزیع منظم بسته‌های غذایی و بهداشتی بین خانواده‌ها."},

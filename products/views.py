@@ -1,5 +1,5 @@
 # products/views.py
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views import View, generic
@@ -19,49 +19,19 @@ class ProductListView(ListView):
     context_object_name = 'products'
     paginate_by = 12
 
-    def get_queryset(self):
-        qs = Product.objects.filter(is_active=True, status='published').order_by('-datetime_created')
-        category_slug = self.request.GET.get('category')
-        if category_slug:
-            qs = qs.filter(category__slug=category_slug)
-        return qs
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.filter(is_active=True).order_by('display_order')
-        return context
-
-
-class FoodsListView(ListView):
-    model = Product
-    template_name = 'products/product_list.html'
-    context_object_name = 'products'
-    paginate_by = 12
-
-    def get_queryset(self):
-        return Product.objects.filter(category__slug='foods', is_active=True, status='published')
-
-class BagsListView(ListView):
-    model = Product
-    template_name = 'products/product_list.html'
-    context_object_name = 'products'
-    paginate_by = 12
-
-    def get_queryset(self):
-        return Product.objects.filter(category__slug='bags', is_active=True, status='published')
-
-
-from django.views.generic import ListView
-from django.db.models import Q
-from .models import Product, Category
-from .forms import ProductSearchForm
-
-# 🟢 لیست عمومی محصولات
-class ProductListView(ListView):
-    model = Product
-    template_name = 'products/product_list.html'
-    context_object_name = 'products'
-    paginate_by = 12
+    @staticmethod
+    def _get_category_family_ids(root_category):
+        """Return the ids of the category together with all active descendants."""
+        ids = [root_category.id]
+        child_ids = list(
+            Category.objects.filter(parent=root_category, is_active=True).values_list('id', flat=True)
+        )
+        while child_ids:
+            ids.extend(child_ids)
+            child_ids = list(
+                Category.objects.filter(parent__in=child_ids, is_active=True).values_list('id', flat=True)
+            )
+        return ids
 
     def get_queryset(self):
         queryset = (
@@ -70,26 +40,69 @@ class ProductListView(ListView):
             .prefetch_related('images')
         )
 
-        # مرتب‌سازی
+        self.selected_category = None
+        category_slug = self.request.GET.get('category')
+        if category_slug:
+            self.selected_category = get_object_or_404(
+                Category, slug=category_slug, is_active=True
+            )
+            category_ids = self._get_category_family_ids(self.selected_category)
+            queryset = queryset.filter(category_id__in=category_ids)
+
         sort = self.request.GET.get('sort')
-        if sort == 'newest':
-            queryset = queryset.order_by('-created_at')
-        elif sort == 'cheapest':
+        if sort == 'cheapest':
             queryset = queryset.order_by('unit_price')
         elif sort == 'expensive':
             queryset = queryset.order_by('-unit_price')
+        else:
+            queryset = queryset.order_by('-datetime_created')
 
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.filter(is_active=True)
+
+        showcase_prefetch = Prefetch(
+            'products',
+            queryset=Product.objects.filter(
+                is_active=True,
+                status='published'
+            )
+            .select_related('category')
+            .prefetch_related('images')
+            .order_by('-datetime_created')[:4],
+            to_attr='showcase_products'
+        )
+
+        categories_qs = (
+            Category.objects.filter(
+                is_active=True,
+                products__is_active=True,
+                products__status='published'
+            )
+            .prefetch_related(showcase_prefetch)
+            .order_by('display_order', 'title')
+            .distinct()
+        )
+
+        selected_category = getattr(self, 'selected_category', None)
+
+        context['categories'] = [
+            category for category in categories_qs
+            if getattr(category, 'showcase_products', [])
+            and (selected_category is None or category.pk != selected_category.pk)
+        ]
         context['search_form'] = ProductSearchForm()
         context['sort'] = self.request.GET.get('sort', '')
+        context['selected_category'] = selected_category
+        context['selected_category_products'] = (
+            self.object_list if selected_category else Product.objects.none()
+        )
+        context['selected_category_slug'] = (
+            selected_category.slug if selected_category else ''
+        )
         return context
 
-
-# 🟡 نمایش محصولات یک دسته خاص
 class CategoryProductListView(ProductListView):
     def get_queryset(self):
         category_slug = self.kwargs.get('slug')
@@ -245,6 +258,43 @@ class ProductDetailView(generic.DetailView):
         )[:8]
 
         return context
+
+
+class BagsListView(generic.ListView):
+    model = Product
+    template_name = 'products/bag_list.html'
+    context_object_name = 'bags'
+    paginate_by = 6
+
+    def get_queryset(self):
+        main_category = get_object_or_404(Category, slug='bags')
+        # همه محصولات این دسته و زیردسته‌هایش
+        sub_categories = Category.objects.filter(parent=main_category)
+        category_ids = ProductListView._get_category_family_ids(main_category)
+        return Product.objects.filter(
+            category_id__in=category_ids,
+            is_active=True,
+            status='published'
+        )
+
+class FoodsListView(generic.ListView):
+    model = Product
+    template_name = 'products/food_list.html'
+    context_object_name = 'foods'
+    paginate_by = 6
+
+    def get_queryset(self):
+        main_category = get_object_or_404(Category, slug='foods')
+        # همه محصولات این دسته و زیردسته‌هایش
+        sub_categories = Category.objects.filter(parent=main_category)
+        category_ids = ProductListView._get_category_family_ids(main_category)
+        return Product.objects.filter(
+            category_id__in=category_ids,
+            is_active=True,
+            status='published'
+        )
+
+
 
 class CommentCreateView(generic.CreateView):
     model = Comment

@@ -1,0 +1,80 @@
+﻿[
+  {
+    "model": "charity.impactstat",
+    "pk": 1,
+    "fields": {
+      "title": "سال‌های فعالیت",
+      "value": "5",
+      "unit": "سال",
+      "description": "از 1400 همراه خانواده‌های آسیب‌پذیر هستیم.",
+      "display_order": 1,
+      "is_active": true
+    }
+  },
+  {
+    "model": "charity.impactstat",
+    "pk": 2,
+    "fields": {
+      "title": "حامیان فعال",
+      "value": "1800",
+      "unit": "نفر",
+      "description": "خیرینی که در 12 ماه گذشته همراه بوده‌اند.",
+      "display_order": 2,
+      "is_active": true
+    }
+  },
+  {
+    "model": "charity.impactstat",
+    "pk": 3,
+    "fields": {
+      "title": "پروژه‌های تکمیل‌شده",
+      "value": "42",
+      "unit": "پروژه",
+      "description": "از مدرسه‌سازی تا تأمین داروی بیماران.",
+      "display_order": 3,
+      "is_active": true
+    }
+  },
+  {
+    "model": "charity.participationmethod",
+    "pk": 1,
+    "fields": {
+      "title": "حمایت مالی ماهانه",
+      "slug": "monthly-donation",
+      "description": "با تعیین مبلغ دلخواه، به صورت ماهانه پشتوانه پروژه‌های حیاتی باشید.",
+      "icon": "fas fa-donate",
+      "action_text": "شروع حمایت",
+      "action_url": "mailto:charity@hivashop.ir",
+      "is_active": true,
+      "display_order": 1
+    }
+  },
+  {
+    "model": "charity.participationmethod",
+    "pk": 2,
+    "fields": {
+      "title": "داوطلبی تخصصی",
+      "slug": "volunteer",
+      "description": "مهارت‌های حرفه‌ای خود را در قالب مشاوره، آموزش یا پشتیبانی در اختیار تیم پروژه بگذارید.",
+      "icon": "fas fa-hands-helping",
+      "action_text": "فرم داوطلبی",
+      "action_url": "https://forms.gle/example",
+      "is_active": true,
+      "display_order": 2
+    }
+  },
+  {
+    "model": "charity.participationmethod",
+    "pk": 3,
+    "fields": {
+      "title": "تأمین کالا یا خدمات",
+      "slug": "in-kind-support",
+      "description": "اگر امکان تهیه کالا یا خدمات موردنیاز پروژه‌ها را دارید با ما هماهنگ شوید.",
+      "icon": "fas fa-box-heart",
+      "action_text": "هماهنگی",
+      "action_url": "tel:+989121234567",
+      "is_active": true,
+      "display_order": 3
+    }
+  }
+]

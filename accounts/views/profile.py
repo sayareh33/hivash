@@ -1,12 +1,14 @@
 # accounts/views.py
 import random
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
+from accounts.forms import ProfileEditForm
 from accounts.models import UserProfile, PhoneChangeHistory
 from accounts.services.phone_change import PhoneChangeService
 
@@ -16,7 +18,7 @@ from django.utils import timezone
 from datetime import timedelta
 import logging
 
-from products.models import Order
+from orders.models import Order
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +68,55 @@ def profile_view(request):
     }
 
     return render(request, 'accounts/profile1.html', context)
+
+
+@login_required
+def profile_edit(request):
+    try:
+        profile = request.user.profile
+    except UserProfile.DoesNotExist:
+        profile = UserProfile.objects.create(user=request.user)
+
+    orders = Order.objects.filter(user_profile=profile).order_by('-datetime_created')
+    total_orders = orders.count()
+    completed_orders = orders.filter(status=Order.ORDER_STATUS_PAID).count()
+    total_spent = sum(order.total_price for order in orders.filter(status=Order.ORDER_STATUS_PAID))
+    avg_order_value = total_spent / completed_orders if completed_orders > 0 else 0
+
+    if request.method == 'POST':
+        form = ProfileEditForm(request.POST, instance=profile, user=request.user)
+        if form.is_valid():
+            updated_profile = form.save(commit=False)
+            updated_profile.user = request.user
+            if not updated_profile.phone:
+                updated_profile.phone = request.user.phone
+            updated_profile.save()
+            form.save_m2m()
+
+            email = form.cleaned_data.get('email')
+            if email is not None and email != request.user.email:
+                request.user.email = email
+                request.user.save(update_fields=['email'])
+
+            messages.success(request, "Profile updated successfully.")
+            return redirect('accounts:profile')
+    else:
+        initial = {}
+        if request.user.email and not profile.email:
+            initial['email'] = request.user.email
+        form = ProfileEditForm(instance=profile, user=request.user, initial=initial)
+
+    context = {
+        'form': form,
+        'profile': profile,
+        'orders': orders,
+        'total_orders': total_orders,
+        'completed_orders': completed_orders,
+        'total_spent': total_spent,
+        'avg_order_value': avg_order_value,
+    }
+
+    return render(request, 'accounts/profile_edit.html', context)
 
 
 class PhoneChangeService:

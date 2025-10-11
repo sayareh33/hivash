@@ -1,250 +1,216 @@
 {% extends '_base.html' %}
-{% load static %}
-{% load i18n %}
-{% load humanize %}
-{% load number_filters %}
-{% block title %}محصولات - خانه اشتغال هیوا{% endblock %}
+{% load static humanize number_filters %}
+
+{% block title %}Products{% if selected_category %} - {{ selected_category.title }}{% endif %}{% endblock %}
 
 {% block extra_css %}
 <style>
-:root {
-    --primary-green: #00ff7f;
-    --primary-yellow: #fff200;
-    --primary-gradient: linear-gradient(135deg, var(--primary-green), var(--primary-yellow));
-    --light-bg: #f8f9fc;
-    --dark-text: #2c3e50;
-    --border-radius: 10px;
-    --box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-}
+    .catalog-section { margin-bottom: 56px; }
+    .section-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid rgba(0, 200, 150, 0.25);
+        padding-bottom: 12px;
+    }
+    .section-heading h2 { font-weight: 700; font-size: 1.5rem; margin: 0; }
 
-.category-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--primary-green);
-}
-
-.category-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--dark-text);
-    position: relative;
-}
-
-.category-title::after {
-    content: '';
-    position: absolute;
-    bottom: -12px;
-    right: 0;
-    width: 60px;
-    height: 3px;
-    background: var(--primary-gradient);
-    border-radius: 3px;
-}
-
-.view-all-link {
-    color: var(--primary-green);
-    text-decoration: none;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    transition: all 0.3s;
-}
-
-.view-all-link:hover {
-    color: #3d8b40;
-    transform: translateX(-5px);
-}
-
-.view-all-link i {
-    margin-right: 5px;
-}
-
-.product-card {
-    transition: all 0.3s ease;
-    border: 1px solid #eaeaea;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    height: 100%;
-    background: white;
-    box-shadow: var(--box-shadow);
-    margin-bottom: 20px;
-}
-
-.product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    border-color: var(--primary-green);
-}
-
-.product-image {
-    position: relative;
-    overflow: hidden;
-    aspect-ratio: 1/1;
-}
-
-.product-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-.product-card:hover .product-image img {
-    transform: scale(1.05);
-}
-
-.product-info {
-    padding: 15px;
-}
-
-.product-title a {
-    color: #333;
-    text-decoration: none;
-    font-weight: 600;
-    display: block;
-    margin-bottom: 10px;
-    height: 50px;
-    overflow: hidden;
-}
-
-.product-title a:hover {
-    color: var(--primary-green);
-}
-
-.product-price {
-    color: var(--primary-green);
-    font-weight: 700;
-    font-size: 1.1rem;
-    margin-bottom: 15px;
-}
-
-.product-badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: var(--primary-yellow);
-    color: #333;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
-    z-index: 2;
-}
-
-.add-to-cart-btn {
-    background: var(--primary-gradient);
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    font-weight: 600;
-    transition: all 0.3s;
-    width: 100%;
-}
-
-.add-to-cart-btn:hover {
-    background: linear-gradient(135deg, #3d8b40, #e6ac00);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.category-section {
-    margin-bottom: 50px;
-}
-
-.section-title {
-    text-align: center;
-    margin: 40px 0 30px;
-    position: relative;
-    padding-bottom: 15px;
-}
-
-.section-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 50%;
-    transform: translateX(50%);
-    width: 100px;
-    height: 3px;
-    background: var(--primary-gradient);
-    border-radius: 3px;
-}
-
-@media (max-width: 768px) {
-    .category-header { flex-direction: column; align-items: flex-start; }
-    .view-all-link { margin-top: 10px; }
-    .product-card { margin-bottom: 15px; }
-}
+    .card-product {
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        height: 100%;
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+        box-shadow: 0 12px 32px rgba(15, 52, 96, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+    .card-product:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 18px 40px rgba(15, 52, 96, 0.15);
+    }
+    .card-product .thumb {
+        position: relative;
+        aspect-ratio: 1/1;
+        overflow: hidden;
+    }
+    .card-product .thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .card-product .thumb .badge-discount {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: rgba(220, 53, 69, 0.9);
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+    .card-product .card-body {
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex-grow: 1;
+    }
+    .card-product .card-body h3 {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+    .card-product .card-body h3 a {
+        color: #1f2933;
+        text-decoration: none;
+    }
+    .card-product .card-body h3 a:hover {
+        color: #0a6efc;
+    }
+    .card-product .price {
+        font-weight: 700;
+        color: #0a6efc;
+    }
+    .card-product .price small {
+        font-size: 0.85rem;
+    }
+    .card-product .btn { margin-top: auto; }
+    .filters button { min-width: 120px; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container py-5">
-    <h2 class="section-title">محصولات ما</h2>
-
-    {% for category in categories %}
-    <div class="category-section">
-        <div class="category-header">
-            <h3 class="category-title">{{ category.title }}</h3>
-            <a href="{% url 'products:product_list' %}?category={{ category.slug }}" class="view-all-link">
-                مشاهده همه
-                <i class="bi bi-arrow-left"></i>
-            </a>
+    {% if selected_category %}
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+            <div>
+                <h1 class="h3 fw-bold mb-2">{{ selected_category.title }}</h1>
+                <p class="text-muted mb-0">???? ??????? ??? ???? ?? ????? ????? ???????.</p>
+            </div>
+            <div class="filters d-flex gap-2 flex-wrap">
+                <a href="?category={{ selected_category.slug }}" class="btn btn-outline-secondary {% if not sort %}active{% endif %}">????????</a>
+                <a href="?category={{ selected_category.slug }}&sort=cheapest" class="btn btn-outline-secondary {% if sort == 'cheapest' %}active{% endif %}">??????????</a>
+                <a href="?category={{ selected_category.slug }}&sort=expensive" class="btn btn-outline-secondary {% if sort == 'expensive' %}active{% endif %}">?????????</a>
+                <a href="{% url 'products:product_list' %}" class="btn btn-light">?????? ?? ??? ???????</a>
+            </div>
         </div>
 
-        <div class="row">
-            {% for product in category.products.all|slice:":4" %}
-            <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
-                <div class="product-card">
-                    <div class="product-image">
+        <div class="row g-4">
+            {% for product in selected_category_products %}
+            <div class="col-xl-3 col-lg-4 col-md-6">
+                <div class="card-product">
+                    <div class="thumb">
                         <a href="{{ product.get_absolute_url }}">
                             {% if product.primary_image_url %}
                                 <img src="{{ product.primary_image_url }}" alt="{{ product.title }}">
                             {% else %}
-                                <img src="{% static 'img/products/default.jpg' %}" alt="بدون تصویر">
+                                <img src="{% static 'img/products/default.jpg' %}" alt="Product image">
                             {% endif %}
                         </a>
                         {% if product.has_active_discount %}
-                        <span class="product-badge">تخفیف ویژه</span>
+                        <span class="badge-discount">Sale</span>
                         {% endif %}
                     </div>
-                    <div class="product-info">
-                        <h3 class="product-title">
-                            <a href="{{ product.get_absolute_url }}">{{ product.title }}</a>
-                        </h3>
-                        <p class="text-muted mb-2">{{ product.short_description|truncatechars:60 }}</p>
-                        <div class="product-price mb-3">
+                    <div class="card-body">
+                        <h3><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>
+                        <p class="text-muted small mb-0">{{ product.short_description|truncatechars:70 }}</p>
+                        <div class="price">
                             {% if product.has_active_discount %}
-                                <span class="text-danger">{{ product.get_final_price|intcomma }} تومان</span>
+                                <span class="text-danger">{{ product.get_final_price|intcomma:False|translate_number }} تومان</span>
                                 <small class="text-decoration-line-through text-muted ms-2">
-                                    {{ product.unit_price|intcomma }} تومان
+                                    {{ product.unit_price|intcomma:False|translate_number }} تومان
                                 </small>
                             {% else %}
-                                {{ product.unit_price|intcomma }} تومان
+                                {{ product.unit_price|intcomma:False|translate_number }} تومان
                             {% endif %}
                         </div>
-                        <form action="{% url 'carts:add_to_cart' product.id %}" method="post">
+                        <form action="{% url 'carts:add_to_cart' product.id %}" method="post" class="js-add-to-cart-form" data-add-to-cart data-product-id="{{ product.id }}" data-product-name="{{ product.title }}" data-ajax-url="{% url 'carts:ajax_add_to_cart' product.id %}">
                             {% csrf_token %}
                             <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="add-to-cart-btn">
-                                <i class="bi bi-cart-plus me-2"></i>
-                                افزودن به سبد
+                            <input type="hidden" name="inplace" value="false">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-cart-plus me-2"></i> ?????? ?? ??? ????
                             </button>
                         </form>
                     </div>
                 </div>
             </div>
             {% empty %}
-            <div class="col-12 text-center py-5">
-                <p class="text-muted">هیچ محصولی در این دسته یافت نشد.</p>
+            <div class="col-12">
+                <div class="alert alert-info">???? ?????? ?? ??? ???? ??? ???? ???.</div>
             </div>
             {% endfor %}
         </div>
-    </div>
-    {% endfor %}
+    {% else %}
+        <div class="text-center mb-5">
+            <h1 class="h3 fw-bold">Products by category</h1>
+            <p class="text-muted">Each row shows four highlighted items. Use “view all” to jump into the full catalogue of that category.</p>
+        </div>
+
+        {% for category in categories %}
+        <div class="catalog-section">
+            <div class="section-heading">
+                <h2>{{ category.title }}</h2>
+                <a class="btn btn-link" href="{% url 'products:product_list' %}?category={{ category.slug }}">
+                    View all {{ category.title }}
+                    <i class="bi bi-arrow-left-short"></i>
+                </a>
+            </div>
+            <div class="row g-4">
+                {% for product in category.showcase_products %}
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="card-product">
+                        <div class="thumb">
+                            <a href="{{ product.get_absolute_url }}">
+                                {% if product.primary_image_url %}
+                                    <img src="{{ product.primary_image_url }}" alt="{{ product.title }}">
+                                {% else %}
+                                    <img src="{% static 'img/products/default.jpg' %}" alt="Product image">
+                                {% endif %}
+                            </a>
+                            {% if product.has_active_discount %}
+                            <span class="badge-discount">Sale</span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <h3><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>
+                            <p class="text-muted small mb-0">{{ product.short_description|truncatechars:70 }}</p>
+                            <div class="price">
+                                {% if product.has_active_discount %}
+                                    <span class="text-danger">{{ product.get_final_price|intcomma:False|translate_number }} تومان</span>
+                                    <small class="text-decoration-line-through text-muted ms-2">
+                                        {{ product.unit_price|intcomma:False|translate_number }} تومان
+                                    </small>
+                                {% else %}
+                                    {{ product.unit_price|intcomma:False|translate_number }} تومان
+                                {% endif %}
+                            </div>
+                            <form action="{% url 'carts:add_to_cart' product.id %}" method="post" class="js-add-to-cart-form" data-add-to-cart data-product-id="{{ product.id }}" data-product-name="{{ product.title }}" data-ajax-url="{% url 'carts:ajax_add_to_cart' product.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="quantity" value="1">
+                                <input type="hidden" name="inplace" value="false">
+                                <button type="submit" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-cart-plus me-2"></i> ?????? ?? ??? ????
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-light border text-center">
+                        ???? ????? ????? ???? ??? ???? ??? ???? ???.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-info text-center">?? ??? ???? ????????? ????? ???? ????? ???? ?????.</div>
+        {% endfor %}
+    {% endif %}
 </div>
 {% endblock %}

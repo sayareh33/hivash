@@ -20,6 +20,24 @@
   <!-- سبک جدید -->
   <link href="{% static 'css/base.css' %}" rel="stylesheet">
   <link href="{% static 'css/main.css' %}" rel="stylesheet">
+  <style>
+    .cart-toast {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      z-index: 1100;
+      display: none;
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #22c55e, #15803d);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(22, 101, 52, 0.35);
+      min-width: 220px;
+    }
+    .cart-toast--error {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+    }
+  </style>
   {% block extra_css %}{% endblock %}
 </head>
 
@@ -28,11 +46,117 @@
   <main class="site-main">
     {% block content %}{% endblock %}
   </main>
+  <div id="cart-toast" class="cart-toast" role="status" aria-live="polite"></div>
   {% include 'partials/footer.html' %}
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{% static 'js/main.js' %}"></script>
+  <script>
+    (function () {
+      const toastEl = document.getElementById('cart-toast');
+      const csrfInputs = document.querySelectorAll('input[name="csrfmiddlewaretoken"]');
+
+      function getCsrfToken() {
+        if (csrfInputs.length) {
+          return csrfInputs[0].value;
+        }
+        const cookieValue = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+        return cookieValue ? decodeURIComponent(cookieValue.split('=')[1]) : '';
+      }
+
+      function showToast(message, type = 'success') {
+        if (!toastEl) return;
+        toastEl.textContent = message;
+        toastEl.classList.toggle('cart-toast--error', type === 'error');
+        toastEl.style.display = 'block';
+        clearTimeout(showToast.hideTimer);
+        showToast.hideTimer = setTimeout(() => {
+          toastEl.style.display = 'none';
+        }, 2400);
+      }
+
+      function updateCartBadge(totalItems) {
+        document.querySelectorAll('.navbar-cart-badge').forEach(badge => {
+          badge.textContent = totalItems;
+        });
+      }
+
+      function attachAddToCartForms(root = document) {
+        const forms = root.querySelectorAll('form[data-add-to-cart], form.js-add-to-cart-form, form[action*="/carts/add/"]');
+        forms.forEach(form => {
+          if (form.dataset.cartAjaxBound === 'true') return;
+          if (form.classList.contains('hiva-quantity-form') || form.classList.contains('hiva-remove-form')) return;
+
+          form.dataset.cartAjaxBound = 'true';
+          form.addEventListener('submit', function (event) {
+            if (!window.fetch) return; // graceful fallback
+            event.preventDefault();
+
+            const submitBtn = form.querySelector('[type="submit"]');
+            const originalText = submitBtn ? submitBtn.textContent : '';
+            if (submitBtn) {
+              submitBtn.disabled = true;
+              submitBtn.textContent = 'در حال افزودن...';
+            }
+
+            const formData = new FormData(form);
+            if (!formData.has('quantity')) {
+              formData.set('quantity', '1');
+            }
+
+            const ajaxUrl = form.dataset.ajaxUrl || form.action;
+
+            fetch(ajaxUrl, {
+              method: 'POST',
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCsrfToken(),
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: new URLSearchParams(formData),
+            })
+              .then(response => response.json())
+              .then(data => {
+                if (!data) throw new Error('پاسخ نامعتبر است');
+                if (data.success) {
+                  if (data.totals) {
+                    updateCartBadge(data.totals.total_items ?? data.totals.totalItems ?? 0);
+                  }
+                  const name = form.dataset.productName || '';
+                  showToast(name ? `${name} به سبد خرید اضافه شد.` : data.message || 'به سبد خرید اضافه شد.', 'success');
+                } else {
+                  showToast(data.message || 'امکان افزودن به سبد وجود ندارد.', 'error');
+                }
+              })
+              .catch(() => {
+                showToast('در افزودن به سبد خطایی رخ داد.', 'error');
+              })
+              .finally(() => {
+                if (submitBtn) {
+                  submitBtn.disabled = false;
+                  submitBtn.textContent = originalText;
+                }
+              });
+          });
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        attachAddToCartForms();
+        const observer = new MutationObserver(mutations => {
+          mutations.forEach(mutation => {
+            mutation.addedNodes.forEach(node => {
+              if (node.nodeType === 1) {
+                attachAddToCartForms(node);
+              }
+            });
+          });
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      });
+    })();
+  </script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -649,14 +649,14 @@
             <div class="slide-content">
                 <h1 class="hero-title">حمایت از نیازمندان</h1>
                 <p class="hero-subtitle">با خرید محصولات ما، به نیازمندان کمک کنید.</p>
-                <a href="{% url 'products:foods_list' %}" class="btn hero-btn btn-lg">مشاهده محصولات</a>
+                <a href="{% url 'products:product_list' %}?category=foods" class="btn hero-btn btn-lg">مشاهده محصولات</a>
             </div>
         </div>
         <div class="hero-slide" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('{% static "img/slider/banner3.jpg" %}');">
             <div class="slide-content">
                 <h1 class="hero-title">محصولات دست‌ساز</h1>
                 <p class="hero-subtitle">محصولات ما با کیفیت بالا و توسط افراد توان‌یاب تولید شده‌اند.</p>
-                <a href="{% url 'products:bags_list' %}" class="btn hero-btn btn-lg">مشاهده محصولات</a>
+                <a href="{% url 'products:product_list' %}?category=bags" class="btn hero-btn btn-lg">مشاهده محصولات</a>
             </div>
         </div>
 
@@ -666,41 +666,6 @@
         <button class="slide-nav-btn slide-next" onclick="changeSlide(1)">
             <i class="fas fa-chevron-left"></i>
         </button>
-    </section>
-
-    <!-- بخش معرفی -->
-    <section class="intro-section">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="intro-card fade-in-up">
-                        <div class="intro-icon">
-                            <i class="fas fa-heart"></i>
-                        </div>
-                        <h3>ماموریت ما</h3>
-                        <p>حمایت از کودکان بی‌سرپرست و خانواده‌های نیازمند از طریق فروش محصولات باکیفیت و دست‌ساز</p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="intro-card fade-in-up">
-                        <div class="intro-icon">
-                            <i class="fas fa-hands-helping"></i>
-                        </div>
-                        <h3>چگونه کمک کنیم؟</h3>
-                        <p>هیوا فقط یک فروشگاه نیست، ما اینجا با هم زندگی می کنیم.</p>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="intro-card fade-in-up">
-                        <div class="intro-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h3>جامعه ما</h3>
-                        <p>بیش از 500 خانواده تحت پوشش و 200 کودک بی‌سرپرست که از کمک‌های شما بهره‌مند شده‌اند</p>
-                    </div>
-                </div>
-            </div>
-        </div>
     </section>
 
     <!-- بخش محصولات -->
@@ -714,7 +679,7 @@
 <!-- دسته‌بندی خوراکی‌ها -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="category-title">محصولات خوراکی</h3>
-    <a href="{% url 'products:foods_list' %}" class="btn btn-outline-primary">
+    <a href="{% url 'products:product_list' %}?category=foods" class="btn btn-outline-primary">
         مشاهده همه
         <i class="fas fa-arrow-left ms-2"></i>
     </a>
@@ -750,9 +715,17 @@
                     {{ product.unit_price|intcomma:False|translate_number  }} تومان
                     {% endif %}
                 </p>
-                <form action="{% url 'carts:add_to_cart' product.id %}" method="post">
+                
+                <form action="{% url 'carts:add_to_cart' product.id %}"
+                      method="post"
+                      class="js-add-to-cart-form"
+                      data-add-to-cart
+                      data-product-id="{{ product.id }}"
+                      data-product-name="{{ product.title }}"
+                      data-ajax-url="{% url 'carts:ajax_add_to_cart' product.id %}">
                     {% csrf_token %}
                     <input type="hidden" name="quantity" value="1">
+                    <input type="hidden" name="inplace" value="false">
                     <button type="submit" class="product-btn">افزودن به سبد خرید</button>
                 </form>
             </div>
@@ -768,7 +741,7 @@
             <!-- دسته‌بندی کیف‌ها -->
 <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
     <h3 class="category-title">کیف ها</h3>
-    <a href="{% url 'products:bags_list' %}" class="btn btn-outline-primary">
+    <a href="{% url 'products:product_list' %}?category=bags" class="btn btn-outline-primary">
         مشاهده همه
         <i class="fas fa-arrow-left ms-2"></i>
     </a>
@@ -804,9 +777,17 @@
                     {{ product.unit_price|intcomma:False|translate_number  }} تومان
                     {% endif %}
                 </p>
-                <form action="{% url 'carts:add_to_cart' product.id %}" method="post">
+                
+                <form action="{% url 'carts:add_to_cart' product.id %}"
+                      method="post"
+                      class="js-add-to-cart-form"
+                      data-add-to-cart
+                      data-product-id="{{ product.id }}"
+                      data-product-name="{{ product.title }}"
+                      data-ajax-url="{% url 'carts:ajax_add_to_cart' product.id %}">
                     {% csrf_token %}
                     <input type="hidden" name="quantity" value="1">
+                    <input type="hidden" name="inplace" value="false">
                     <button type="submit" class="product-btn">افزودن به سبد خرید</button>
                 </form>
             </div>
@@ -830,7 +811,7 @@
                         <h2 class="charity-title">انجمن یاوران </h2>
                         <p>انجمن یاوران گل نرگس به عنوان بخش جانبی هیوا، متمرکز بر حمایت از کودکان بی‌سرپرست و کم‌توان است. ما با ارائه خدمات آموزشی، بهداشتی و روانشناسی تلاش می‌کنیم زندگی بهتری برای این کودکان بسازیم.</p>
                         <p>هم‌اکنون بیش از 120 کودک تحت پوشش این انجمن هستند و با کمک‌های شما می‌توانیم این عدد را افزایش دهیم.</p>
-                        <a href="{% url 'charity:charity' %}" class="charity-btn mt-3">همکاری با انجمن</a>
+                        <a href="{% url 'charity:home' %}" class="charity-btn mt-3">همکاری با انجمن</a>
                     </div>
                 </div>
                 <div class="col-lg-6">
@@ -928,6 +909,41 @@
 
             <div class="text-center mt-4">
                 <a href="{% url 'pages:aboutus' %}" class="btn btn-outline-primary px-4 py-2">مشاهده همه مقالات</a>
+            </div>
+        </div>
+    </section>
+
+   <!-- بخش معرفی -->
+    <section class="intro-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="intro-card fade-in-up">
+                        <div class="intro-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3>ماموریت ما</h3>
+                        <p>حمایت از کودکان بی‌سرپرست و خانواده‌های نیازمند از طریق فروش محصولات باکیفیت و دست‌ساز</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="intro-card fade-in-up">
+                        <div class="intro-icon">
+                            <i class="fas fa-hands-helping"></i>
+                        </div>
+                        <h3>چگونه کمک کنیم؟</h3>
+                        <p>هیوا فقط یک فروشگاه نیست، ما اینجا با هم زندگی می کنیم.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="intro-card fade-in-up">
+                        <div class="intro-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>جامعه ما</h3>
+                        <p>بیش از 500 خانواده تحت پوشش و 200 کودک بی‌سرپرست که از کمک‌های شما بهره‌مند شده‌اند</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

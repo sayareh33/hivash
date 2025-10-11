@@ -1,887 +1,411 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
 {% load static %}
-{% load i18n %}
 {% load humanize %}
-{% load number_filters %}
 
-{% block title %}سبد خرید - خانه اشتغال هیوا{% endblock %}
+{% block title %}سبد خرید{% endblock %}
 
 {% block extra_css %}
 <style>
-    :root {
-        --primary-color: #4CAF50;
-        --primary-dark: #3d8b40;
-        --accent-color: #FFC107;
-        --light-bg: #f8f9fc;
-        --dark-text: #2c3e50;
-        --light-text: #6c757d;
-        --border-radius: 10px;
-        --box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-        --success-color: #28a745;
-        --danger-color: #dc3545;
-    }
-
-    .cart-container {
+    .cart-page {
         padding: 2rem 0;
     }
 
-    .cart-header {
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-        color: white;
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: var(--box-shadow);
-    }
-
-    .cart-item {
-        background: white;
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: var(--box-shadow);
-        transition: transform 0.3s ease;
-    }
-
-    .cart-item:hover {
-        transform: translateY(-5px);
-    }
-
-    .product-image-container {
-        position: relative;
-        overflow: hidden;
-        border-radius: 8px;
-        height: 120px;
-    }
-
-    .product-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-
-    .cart-item:hover .product-image {
-        transform: scale(1.05);
-    }
-
-    .product-info h3 {
-        font-size: 1.2rem;
-        margin-bottom: 0.5rem;
-        color: var(--dark-text);
-    }
-
-    .product-price {
-        color: var(--primary-color);
-        font-weight: 700;
-        font-size: 1.1rem;
-    }
-
-    .discount-badge {
-        background-color: var(--danger-color);
-        color: white;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        margin-right: 0.5rem;
-    }
-
-    .quantity-controls {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .quantity-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: var(--light-bg);
-        border: 1px solid #dee2e6;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-
-    .quantity-btn:hover {
-        background: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
-    }
-
-    .quantity-input {
-        width: 50px;
-        text-align: center;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        padding: 0.375rem;
-        margin: 0 0.5rem;
-        -moz-appearance: textfield;
-    }
-
-    .quantity-input::-webkit-outer-spin-button,
-    .quantity-input::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-
-
-    /* یا برای رنگ زرد-نارنجی */
-    .btn-custom-warning {
-        border-color: #FFA000 !important;
-        color: #FFA000 !important;
-        background: linear-gradient(135deg, transparent, transparent) !important;
-    }
-
-    .btn-custom-warning:hover {
-        background: linear-gradient(135deg, #FFA000, #FF8F00) !important;
-        border-color: #FF8F00 !important;
-        color: white !important;
-    }
-
-    .summary-card {
-        background: white;
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
-        box-shadow: var(--box-shadow);
+    .cart-summary {
         position: sticky;
-        top: 20px;
+        top: 1.5rem;
+        border-radius: 12px;
+        background: #ffffff;
+        box-shadow: 0 12px 30px rgba(15, 67, 43, 0.08);
+        padding: 1.5rem;
     }
 
-    .summary-title {
-        border-bottom: 2px solid var(--primary-color);
-        padding-bottom: 1rem;
-        margin-bottom: 1.5rem;
-        color: var(--dark-text);
-    }
-
-    .summary-item {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 1rem;
-    }
-
+    .summary-item,
     .summary-total {
         display: flex;
         justify-content: space-between;
-        font-weight: bold;
-        font-size: 1.2rem;
-        border-top: 1px solid #dee2e6;
+        align-items: center;
+        margin-bottom: .75rem;
+        font-size: .95rem;
+    }
+
+    .summary-total {
+        margin-top: 1.25rem;
         padding-top: 1rem;
-        margin-top: 1rem;
-        color: var(--primary-color);
+        border-top: 1px solid #e5e7eb;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #046c4e;
     }
 
-    .checkout-btn {
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-        color: white;
-        border: none;
-        border-radius: var(--border-radius);
-        padding: 0.75rem;
+    .cart-item-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 24px rgba(15, 67, 43, 0.05);
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .cart-item-card .product-title {
+        font-size: 1.05rem;
         font-weight: 600;
-        width: 100%;
-        transition: all 0.3s;
-        margin-top: 1rem;
+        margin-bottom: .35rem;
     }
 
-    .checkout-btn:hover {
-        background: linear-gradient(135deg, var(--primary-dark), #347235);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    .cart-item-card .unit-price {
+        color: #64748b;
+        font-size: .9rem;
     }
 
-    .continue-shopping {
-        color: var(--primary-color);
-        text-decoration: none;
+    .quantity-control {
         display: inline-flex;
         align-items: center;
-        transition: all 0.3s;
+        border: 1px solid #cbd5f5;
+        border-radius: 999px;
+        overflow: hidden;
     }
 
-    .continue-shopping:hover {
-        color: var(--primary-dark);
-        transform: translateX(-5px);
+    .quantity-control button {
+        width: 36px;
+        height: 36px;
+        border: 0;
+        background: #f1f5f9;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .quantity-control input {
+        width: 56px;
+        border: 0;
+        text-align: center;
+        font-weight: 600;
+        background: transparent;
+    }
+
+    .quantity-control button:hover {
+        background: #22c55e;
+        color: #fff;
+    }
+
+    .remove-item-btn {
+        color: #ef4444;
+        font-size: .9rem;
+        border: 0;
+        background: transparent;
+    }
+
+    .remove-item-btn:hover {
+        text-decoration: underline;
     }
 
     .empty-cart {
         text-align: center;
-        padding: 3rem;
-        background: white;
-        border-radius: var(--border-radius);
-        box-shadow: var(--box-shadow);
+        padding: 4rem 0;
     }
 
-    .empty-cart-icon {
-        font-size: 4rem;
-        color: #dee2e6;
-        margin-bottom: 1.5rem;
+    .toast-banner {
+        position: fixed;
+        top: 1.5rem;
+        right: 1.5rem;
+        z-index: 1055;
+        padding: .75rem 1.25rem;
+        border-radius: 10px;
+        box-shadow: 0 15px 30px rgba(15, 67, 43, 0.2);
+        color: #fff;
+        display: none;
     }
 
-    .coupon-form {
-        background: var(--light-bg);
-        border-radius: var(--border-radius);
-        padding: 1rem;
-        margin-top: 1.5rem;
+    .toast-success {
+        background: linear-gradient(135deg, #22c55e, #15803d);
     }
 
-    .coupon-btn {
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-        color: white;
-        border: none;
-        border-radius: 4px;
-        padding: 0.5rem 1rem;
-        transition: all 0.3s;
+    .toast-error {
+        background: linear-gradient(135deg, #ef4444, #b91c1c);
     }
-
-    .coupon-btn:hover {
-        background: linear-gradient(135deg, var(--primary-dark), #e0a800);
-        transform: translateY(-2px);
-    }
-
-    /* استایل‌های ریسپانسیو */
-    @media (max-width: 768px) {
-        .cart-item {
-            padding: 1rem;
-        }
-
-        .product-image-container {
-            height: 100px;
-            margin-bottom: 1rem;
-        }
-
-        .quantity-controls {
-            justify-content: flex-start;
-            margin: 1rem 0;
-        }
-
-        .mobile-spacing {
-            margin-bottom: 1rem;
-        }
-
-        .summary-card {
-            position: static;
-            margin-top: 2rem;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .cart-header {
-            padding: 1rem;
-            text-align: center;
-        }
-
-        .product-info h3 {
-            font-size: 1rem;
-        }
-
-        .quantity-btn {
-            width: 32px;
-            height: 32px;
-        }
-
-        .quantity-input {
-            width: 40px;
-            margin: 0 0.25rem;
-        }
-    }
-    .cart-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-    gap: 10px;
-}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container cart-container">
-    <!-- هدر صفحه -->
+<section class="cart-page container">
+    <div class="toast-banner" id="toast-banner"></div>
+    <form id="cart-csrf-token" style="display:none;">{% csrf_token %}</form>
 
-    {% if cart %}
-    <div class="row">
-        <!-- لیست محصولات -->
-        <div class="col-lg-8 mb-4">
-            <div class="cart-header">
-                <h2 class="h4 mb-0">سبد خرید شما</h2>
-                <p class="mb-0">تعداد کالاها: {{ cart|length }}</p>
-            </div>
+    <h1 class="mb-4 fw-bold">سبد خرید</h1>
 
-{% for item in cart %}
-<div class="cart-item" data-product-id="{{ item.product_obj.id }}">
-    <!-- عکس محصول با اندازه کوچک -->
-    <div class="product-image" style="width: 60px; height: 60px; overflow: hidden;">
-        {% if item.product_obj.image_url %}
-            <img src="{{ item.product_obj.image_url }}" alt="{{ item.product_obj.title }}"
-                 style="width: 100%; height: 100%; object-fit: cover;">
-        {% else %}
-            <div style="width: 100%; height: 100%; background: #eee; display: flex; align-items: center; justify-content: center;">
-                <span>بدون تصویر</span>
-            </div>
-        {% endif %}
-    </div>
+    {% if cart_items %}
+    <div class="row gy-4">
+        <div class="col-lg-8">
+            {% for item in cart_items %}
+            <article class="cart-item-card" data-cart-item data-product-id="{{ item.product_id }}">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-2 text-center">
+                        {% if item.product_image_url %}
+                        <img src="{{ item.product_image_url }}" alt="{{ item.product_title }}" class="img-fluid rounded">
+                        {% else %}
+                        <div class="bg-light rounded p-4 text-muted">بدون تصویر</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <div class="product-title">{{ item.product_title }}</div>
+                        <div class="unit-price">قیمت واحد: {{ item.product_unit_price|intcomma }} تومان</div>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-center gap-3">
+                        <div class="quantity-control" data-quantity>
+                            <button type="button" class="btn-decrease" aria-label="کاهش">-</button>
+                            <input type="number" min="1" value="{{ item.quantity }}" aria-label="تعداد">
+                            <button type="button" class="btn-increase" aria-label="افزایش">+</button>
+                        </div>
+                    </div>
+                    <div class="col-md-2 text-md-end">
+                        <div class="fw-semibold" data-item-total>{{ item.total_price_display }}</div>
+                    </div>
+                    <div class="col-md-1 text-md-end">
+                        <button type="button" class="remove-item-btn" data-remove>حذف</button>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
 
-    <!-- اطلاعات محصول -->
-    <div class="product-info" style="flex: 1; padding: 0 10px;">
-        <h4 style="margin: 0; font-size: 14px;">{{ item.product_obj.title }}</h4>
-        <p style="margin: 5px 0; font-size: 12px;">قیمت واحد: {{ item.product_obj.unit_price|floatformat:0 }} تومان</p>
-    </div>
-
-    <!-- کنترل quantity -->
-    <div class="quantity-controls" style="display: flex; align-items: center;">
-        <form class="update-form" method="post" action="{% url 'carts:ajax_update_cart_item' item.product_obj.id %}">
-            {% csrf_token %}
-            <div style="display: flex; align-items: center;">
-                <button type="button" class="decrease-btn" style="padding: 5px 10px;">-</button>
-                <input type="number" name="quantity" value="{{ item.quantity }}" min="1"
-                       class="quantity-input" style="width: 50px; text-align: center; margin: 0 5px;">
-                <button type="button" class="increase-btn" style="padding: 5px 10px;">+</button>
-                <button type="submit" class="btn-update" style="margin-left: 10px; padding: 5px 10px;">تغییر</button>
-            </div>
-        </form>
-    </div>
-
-    <!-- قیمت کل این محصول -->
-    <div class="item-total" style="min-width: 100px; text-align: left;">
-        <strong>{{ item.total_price|floatformat:0 }} تومان</strong>
-    </div>
-
-    <!-- دکمه حذف -->
-    <div class="remove-item">
-        <form method="post" action="{% url 'carts:ajax_remove_from_cart' item.product_obj.id %}">
-            {% csrf_token %}
-            <button type="submit" class="btn-remove" style="background: red; color: white; border: none; padding: 5px 10px; border-radius: 3px;">
-                🗑️
-            </button>
-        </form>
-    </div>
-</div>
-<hr>
-{% endfor %}
-
-</form>
-
-
-
-
-
-
-
-            <!-- دکمه‌های اقدام -->
-            <div class="d-flex justify-content-between mt-4">
-                <a href="{% url 'products:product_list' %}" class="continue-shopping">
-                    <i class="fas fa-arrow-right ms-2"></i>
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <a href="{% url 'products:product_list' %}" class="btn btn-outline-success">
                     ادامه خرید
                 </a>
-                <form method="POST" action="{% url 'carts:ajax_clear_cart' %}"
-                      class="d-flex align-items-center auto-submit-form">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-custom-warning">
-                        <i class="fas fa-trash ms-2"></i>
-                        خالی کردن سبد
-                    </button>
-                </form>
+                <button type="button" class="btn btn-outline-danger" id="clear-cart-btn">
+                    خالی کردن سبد
+                </button>
             </div>
         </div>
 
-        <!-- خلاصه سفارش -->
         <div class="col-lg-4">
-            <div class="summary-card">
-                <h3 class="summary-title">خلاصه سفارش</h3>
+            <aside class="cart-summary" id="cart-summary">
+                <h2 class="h5 fw-bold mb-3">خلاصه سفارش</h2>
 
                 <div class="summary-item">
-                    <span>تعداد کالا:</span>
-                    <span id="total-items">{{ cart|length }}</span>
+                    <span>تعداد اقلام</span>
+                    <span id="summary-total-items">{{ cart_totals.total_items }}</span>
                 </div>
-
                 <div class="summary-item">
-                    <span>جمع کل:</span>
-                    <span id="total-price">{{ cart.get_total_price|intcomma:False|translate_number }} تومان</span>
+                    <span>جمع جزء</span>
+                    <span id="summary-subtotal">{{ cart_totals.formatted_subtotal }}</span>
                 </div>
-
-                {% if cart.coupon %}
                 <div class="summary-item text-success">
-                    <span>تخفیف:</span>
-                    <span id="total-discount">-{{ cart.get_discount|intcomma:False|translate_number }} تومان</span>
+                    <span>تخفیف</span>
+                    <span id="summary-discount">{{ cart_totals.formatted_discount }}</span>
+                </div>
+
+                {% if shipping_methods %}
+                <div class="summary-item flex-column align-items-start">
+                    <label for="shipping-method" class="form-label mb-2">روش ارسال</label>
+                    <select id="shipping-method" class="form-select">
+                        {% for method in shipping_methods %}
+                        <option value="{{ method.id }}" {% if method.id == selected_shipping_method_id %}selected{% endif %}>
+                            {{ method.name }}{% if method.base_cost %} - {{ method.base_cost|intcomma }} تومان{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
                 </div>
                 {% endif %}
 
+                <div class="summary-item">
+                    <span>هزینه ارسال</span>
+                    <span id="summary-shipping">{{ cart_totals.formatted_shipping_cost }}</span>
+                </div>
+                <div class="summary-item">
+                    <span>جمع پس از تخفیف</span>
+                    <span id="summary-after-discount">{{ cart_totals.formatted_total_after_discount }}</span>
+                </div>
+
                 <div class="summary-total">
-                    <span>مبلغ قابل پرداخت:</span>
-                    <span id="final-price" class="text-primary">{{ cart.get_total_price_after_discount|intcomma:False|translate_number }} تومان</span>
+                    <span>مبلغ قابل پرداخت</span>
+                    <span id="summary-grand-total">{{ cart_totals.formatted_grand_total }}</span>
                 </div>
 
-                <!-- کد تخفیف -->
-                <div class="coupon-form">
-                    <h4 class="h6 mb-3">کد تخفیف دارید؟</h4>
-                    <form method="post" action=" ">
-                        {% csrf_token %}
-                        <div class="input-group">
-                            <input type="text" name="code" class="form-control" placeholder="کد تخفیف">
-                            <button class="coupon-btn" type="submit">اعمال</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- دکمه تکمیل سفارش در پایین خلاصه سفارش -->
-                <a href="{% url 'orders:order_create' %}" class="checkout-btn">
-                    <i class="fas fa-credit-card ms-2"></i>
-                    تکمیل سفارش
+                <a href="{% url 'orders:order_create' %}" class="btn btn-success w-100 mt-3">
+                    ادامه فرایند خرید
                 </a>
-            </div>
+            </aside>
         </div>
     </div>
     {% else %}
-    <!-- سبد خرید خالی -->
     <div class="empty-cart">
-        <div class="empty-cart-icon">
-            <i class="fas fa-shopping-cart"></i>
-        </div>
-        <h2 class="h4 mb-3">سبد خرید شما خالی است!</h2>
-        <p class="text-muted mb-4">می‌توانید برای مشاهده محصولات به صفحه خرید بروید</p>
-        <a href="{% url 'products:product_list' %}" class="checkout-btn">
-            <i class="fas fa-shopping-basket ms-2"></i>
-            برو به فروشگاه
-        </a>
+        <h2 class="mb-3">سبد خرید شما خالی است</h2>
+        <p class="text-muted mb-4">برای شروع خرید، به فروشگاه ما سر بزنید.</p>
+        <a href="{% url 'products:product_list' %}" class="btn btn-success">مشاهده محصولات</a>
     </div>
     {% endif %}
-</div>
+</section>
+{% endblock %}
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        console.log('Cart script loaded successfully');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
 
-        // فلگ برای جلوگیری از کلیک‌های متعدد
-        let isProcessing = false;
-
-        // تابع اصلی برای ارسال درخواست‌های AJAX
-        async function submitCartForm(form, isRemove = false) {
-            if (isProcessing) {
-                console.log('Request already in progress, skipping...');
-                return;
-            }
-
-            isProcessing = true;
-
-            const formData = new FormData(form);
-            const url = form.action;
-
-            console.log('Submitting form to:', url);
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                    }
-                });
-
-                // اگر response JSON نیست (یعنی Viewهای قدیمی)، صفحه رو reload کن
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    console.log('Non-JSON response, reloading page...');
-                    window.location.reload();
-                    return;
-                }
-
-                const data = await response.json();
-                console.log('Response data:', data);
-
-                if (data.success) {
-                    updateCartUI(data);
-                    showToast(data.message || 'عملیات موفقیت‌آمیز بود', 'success');
-                } else {
-                    showToast(data.message || 'خطا در انجام عملیات', 'error');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showToast('خطا در ارتباط با سرور', 'error');
-            } finally {
-                isProcessing = false;
-            }
-        }
-
-        // آپدیت رابط کاربری
-        function updateCartUI(data) {
-            console.log('Updating UI with data:', data);
-
-            // آپدیت تعداد کل آیتم‌ها
-            if (data.total_items !== undefined) {
-                const totalItemsElement = document.getElementById('total-items');
-                if (totalItemsElement) {
-                    totalItemsElement.textContent = data.total_items;
-                }
-
-                // آپدیت شمارشگر در نوبار
-                const miniCartCounts = document.querySelectorAll('.mini-cart-count');
-                miniCartCounts.forEach(element => {
-                    element.textContent = data.total_items;
-                });
-            }
-
-            // آپدیت قیمت‌ها
-            if (data.total_price) {
-                const totalPriceElement = document.getElementById('total-price');
-                if (totalPriceElement) {
-                    totalPriceElement.textContent = data.total_price + ' تومان';
-                }
-
-                const finalPriceElement = document.getElementById('final-price');
-                if (finalPriceElement) {
-                    finalPriceElement.textContent = data.total_price + ' تومان';
-                }
-            }
-
-            // آپدیت قیمت آیتم خاص
-            if (data.item_total && data.item_id) {
-                const itemTotalElement = document.querySelector(`.item-total[data-item-id="${data.item_id}"]`);
-                if (itemTotalElement) {
-                    itemTotalElement.textContent = data.item_total + ' تومان';
-                }
-            }
-
-            // اگر سبد خالی شد، صفحه رو ریلود کن
-            if (data.total_items === 0) {
-                console.log('Cart is empty, reloading page...');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            }
-        }
-
-        // نمایش نوتیفیکیشن
-        function showToast(message, type = 'info') {
-            // حذف toastهای قبلی
-            const existingToasts = document.querySelectorAll('.custom-toast');
-            existingToasts.forEach(toast => toast.remove());
-
-            // ایجاد toast جدید
-            const toast = document.createElement('div');
-            toast.className = 'custom-toast';
-            toast.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
-            color: white;
-            border-radius: 8px;
-            z-index: 10000;
-            max-width: 300px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            font-family: Vazir, sans-serif;
-            direction: rtl;
-        `;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-
-            // حذف خودکار بعد از 3 ثانیه
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.style.opacity = '0';
-                    toast.style.transition = 'opacity 0.3s';
-                    setTimeout(() => toast.remove(), 300);
-                }
-            }, 3000);
-        }
-
-        // مدیریت کلیک روی دکمه‌های + و -
-        document.addEventListener('click', function (e) {
-            if (e.target.classList.contains('quantity-minus') ||
-                e.target.classList.contains('quantity-plus')) {
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                console.log('Quantity button clicked:', e.target.className);
-
-                const btn = e.target;
-                const form = btn.closest('form');
-                const input = form.querySelector('.quantity-input');
-
-                if (!input) {
-                    console.error('Input element not found');
-                    return;
-                }
-
-                // تغییر مقدار
-                let newValue = parseInt(input.value);
-
-                if (btn.classList.contains('quantity-minus')) {
-                    if (newValue > 1) {
-                        newValue--;
-                    } else {
-                        return; // اگر مقدار 1 هست، کاری نکن
-                    }
-                } else {
-                    if (newValue < 99) {
-                        newValue++;
-                    } else {
-                        return; // اگر مقدار 99 هست، کاری نکن
-                    }
-                }
-
-                input.value = newValue;
-                console.log('New quantity:', newValue);
-                submitCartForm(form);
-            }
-        });
-
-        // مدیریت تغییر مستقیم مقدار
-        document.addEventListener('change', function (e) {
-            if (e.target.classList.contains('quantity-input')) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                console.log('Quantity input changed manually');
-
-                const input = e.target;
-                let value = parseInt(input.value);
-
-                // اعتبارسنجی مقدار
-                if (isNaN(value) || value < 1) {
-                    value = 1;
-                } else if (value > 99) {
-                    value = 99;
-                }
-
-                input.value = value;
-                submitCartForm(input.closest('form'));
-            }
-        });
-
-        // مدیریت حذف آیتم
-        document.addEventListener('submit', function (e) {
-            if (e.target.classList.contains('remove-form')) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                console.log('Remove form submitted');
-
-                if (confirm('آیا از حذف این محصول از سبد خرید اطمینان دارید؟')) {
-                    const form = e.target;
-                    const productId = form.action.split('/').filter(Boolean).pop();
-
-                    // انیمیشن حذف
-                    const itemElement = document.getElementById(`item-${productId}`);
-                    if (itemElement) {
-                        itemElement.style.transition = 'all 0.3s ease';
-                        itemElement.style.opacity = '0.3';
-                        itemElement.style.transform = 'translateX(-20px)';
-                    }
-
-                    submitCartForm(form, true).then(() => {
-                        // بعد از موفقیت، آیتم رو کاملاً حذف کن
-                        if (itemElement) {
-                            setTimeout(() => {
-                                itemElement.remove();
-                            }, 300);
-                        }
-                    });
-                }
-            }
-        });
-
-        // مدیریت خالی کردن سبد (اگر از AJAX استفاده می‌کنید)
-        document.addEventListener('submit', function (e) {
-            if (e.target.action.includes('/clear/')) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                console.log('Clear cart form submitted');
-
-                if (confirm('آیا از خالی کردن کامل سبد خرید اطمینان دارید؟')) {
-                    // برای clear از روش معمول استفاده می‌کنیم چون نیاز به reload صفحه هست
-                    e.target.submit();
-                }
-            }
-        });
-
-        // جلوگیری از ارسال معمول فرم‌های دیگر
-        document.addEventListener('submit', function (e) {
-            if (e.target.classList.contains('auto-submit-form')) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('Auto-submit form prevented');
-            }
-        });
-
-        console.log('Cart event listeners setup completed');
-    });
-
-    // CSS برای دکمه خالی کردن سبد (زرد-نارنجی)
-    const style = document.createElement('style');
-    style.textContent = `
-    .btn-outline-danger {
-        border-color: #FFA000 !important;
-        color: #FFA000 !important;
-        background-color: transparent !important;
-        transition: all 0.3s ease !important;
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
     }
 
-    .btn-outline-danger:hover {
-        background: linear-gradient(135deg, #FFA000, #FF8F00) !important;
-        border-color: #FF8F00 !important;
-        color: white !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 4px 8px rgba(255, 160, 0, 0.3) !important;
+    function showToast(message, type = 'success') {
+        const banner = document.getElementById('toast-banner');
+        if (!banner) return;
+        banner.textContent = message;
+        banner.className = `toast-banner toast-${type}`;
+        banner.style.display = 'block';
+        setTimeout(() => {
+            banner.style.display = 'none';
+        }, 2500);
     }
-`;
-    document.head.appendChild(style);
 
-// افزودن این اسکریپت به template
-document.addEventListener('DOMContentLoaded', function() {
-    // مدیریت به‌روزرسانی مقدار محصولات
-    document.querySelectorAll('.update-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const productId = this.closest('.cart-item').dataset.productId;
-
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // به‌روزرسانی قیمت آیتم
-                    const itemElement = document.querySelector(`[data-product-id="${productId}"]`);
-                    itemElement.querySelector('.total-price').textContent = data.item_total;
-
-                    // به‌روزرسانی قیمت کل
-                    document.querySelector('.cart-total-price').textContent = data.total_price;
-                    document.querySelector('.cart-total-items').textContent = data.total_items;
-
-                    // نمایش پیام
-                    showMessage(data.message, 'success');
-                } else {
-                    showMessage(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showMessage('خطا در برقراری ارتباط', 'error');
-            });
+    function refreshTotals(totals) {
+        if (!totals) return;
+        const mapping = {
+            'summary-total-items': totals.total_items,
+            'summary-subtotal': totals.formatted_subtotal,
+            'summary-discount': totals.formatted_discount,
+            'summary-shipping': totals.formatted_shipping_cost,
+            'summary-after-discount': totals.formatted_total_after_discount,
+            'summary-grand-total': totals.formatted_grand_total,
+        };
+        Object.entries(mapping).forEach(([id, value]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
         });
-    });
-});
+    }
 
-function showMessage(message, type) {
-    // ایجاد و نمایش پیام
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `alert alert-${type}`;
-    messageDiv.textContent = message;
-
-    document.body.appendChild(messageDiv);
-
-    setTimeout(() => {
-        messageDiv.remove();
-    }, 3000);
-}
-
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    // مدیریت افزایش و کاهش quantity
-    document.querySelectorAll('.increase-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const input = this.parentElement.querySelector('.quantity-input');
-            input.value = parseInt(input.value) + 1;
-        });
-    });
-
-    document.querySelectorAll('.decrease-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const input = this.parentElement.querySelector('.quantity-input');
-            if (parseInt(input.value) > 1) {
-                input.value = parseInt(input.value) - 1;
-            }
-        });
-    });
-
-    // مدیریت به‌روزرسانی quantity
-    document.querySelectorAll('.update-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const productId = this.closest('.cart-item').dataset.productId;
-
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload(); // ساده‌ترین راه برای به‌روزرسانی
-                } else {
-                    alert('خطا در به‌روزرسانی');
-                }
-            });
-        });
-    });
-
-    // مدیریت حذف آیتم
-    document.querySelectorAll('.btn-remove').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const form = this.closest('form');
-
-            fetch(form.action, {
-                method: 'POST',
-                body: new FormData(form),
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('خطا در حذف');
-                }
-            });
-        });
-    });
-
-    // مدیریت خالی کردن سبد خرید
-    document.querySelector('.btn-clear-cart')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        const form = this.closest('form');
-
-        fetch(form.action, {
+    async function postJSON(url, data) {
+        const response = await fetch(url, {
             method: 'POST',
-            body: new FormData(form),
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert(data.message);
-            }
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams(data),
         });
-    });
-});
+        return response.json();
+    }
 
+    function handleItemUpdate(productId, payload) {
+        const card = document.querySelector(`[data-cart-item][data-product-id="${productId}"]`);
+        if (!card) return;
+
+        if (payload) {
+            const quantityInput = card.querySelector('[data-quantity] input[type="number"]');
+            if (quantityInput) quantityInput.value = payload.quantity;
+
+            const totalElement = card.querySelector('[data-item-total]');
+            if (totalElement) totalElement.textContent = payload.formatted_total_price;
+        } else {
+            card.remove();
+        }
+
+        if (!document.querySelector('[data-cart-item]')) {
+            window.location.reload();
+        }
+    }
+
+    function attachQuantityHandlers() {
+        document.querySelectorAll('[data-cart-item]').forEach(card => {
+            const productId = card.dataset.productId;
+            const quantityInput = card.querySelector('[data-quantity] input[type="number"]');
+            const decreaseBtn = card.querySelector('.btn-decrease');
+            const increaseBtn = card.querySelector('.btn-increase');
+
+            const updateQuantity = (newValue) => {
+                if (newValue <= 0) {
+                    removeItem(productId);
+                    return;
+                }
+                postJSON(`{% url 'carts:ajax_update_cart_item' 0 %}`.replace('/0/', `/${productId}/`), {
+                    quantity: newValue,
+                }).then(data => {
+                    if (data.success) {
+                        handleItemUpdate(productId, data.item);
+                        refreshTotals(data.totals);
+                        showToast(data.message, 'success');
+                    } else {
+                        showToast(data.message, 'error');
+                        quantityInput.value = quantityInput.dataset.lastValue || 1;
+                    }
+                });
+            };
+
+            quantityInput.dataset.lastValue = quantityInput.value;
+
+            decreaseBtn.addEventListener('click', () => {
+                const current = parseInt(quantityInput.value, 10) || 1;
+                quantityInput.value = Math.max(0, current - 1);
+                updateQuantity(parseInt(quantityInput.value, 10));
+            });
+
+            increaseBtn.addEventListener('click', () => {
+                const current = parseInt(quantityInput.value, 10) || 1;
+                quantityInput.value = current + 1;
+                updateQuantity(parseInt(quantityInput.value, 10));
+            });
+
+            quantityInput.addEventListener('change', () => {
+                const current = parseInt(quantityInput.value, 10);
+                if (!isNaN(current)) {
+                    updateQuantity(current);
+                }
+            });
+
+            card.querySelector('[data-remove]').addEventListener('click', () => {
+                removeItem(productId);
+            });
+        });
+    }
+
+    function removeItem(productId) {
+        postJSON(`{% url 'carts:ajax_remove_from_cart' 0 %}`.replace('/0/', `/${productId}/`), {})
+            .then(data => {
+                if (data.success) {
+                    handleItemUpdate(productId, null);
+                    refreshTotals(data.totals);
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.message, 'error');
+                }
+            });
+    }
+
+    function attachSummaryHandlers() {
+        const clearBtn = document.getElementById('clear-cart-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                postJSON(`{% url 'carts:ajax_clear_cart' %}`, {}).then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        window.location.reload();
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                });
+            });
+        }
+
+        const shippingSelect = document.getElementById('shipping-method');
+        if (shippingSelect) {
+            shippingSelect.addEventListener('change', () => {
+                postJSON(`{% url 'carts:ajax_update_shipping' %}`, {
+                    shipping_method: shippingSelect.value,
+                }).then(data => {
+                    if (data.success) {
+                        refreshTotals(data.totals);
+                        showToast(data.message, 'success');
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                });
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        attachQuantityHandlers();
+        attachSummaryHandlers();
+    });
 </script>
-{% endblock %}
 {% endblock %}

@@ -34,9 +34,17 @@
                     {{ product.unit_price|intcomma:False }} تومان
                     {% endif %}
                 </p>
-                <form action="{% url 'carts:add_to_cart' product.id %}" method="post">
+                
+                <form action="{% url 'carts:add_to_cart' product.id %}"
+                      method="post"
+                      class="js-add-to-cart-form"
+                      data-add-to-cart
+                      data-product-id="{{ product.id }}"
+                      data-product-name="{{ product.title }}"
+                      data-ajax-url="{% url 'carts:ajax_add_to_cart' product.id %}">
                     {% csrf_token %}
                     <input type="hidden" name="quantity" value="1">
+                    <input type="hidden" name="inplace" value="false">
                     <button type="submit" class="btn btn-primary w-100">افزودن به سبد خرید</button>
                 </form>
             </div>

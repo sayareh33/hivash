@@ -1,6 +1,6 @@
 from django.urls import path
 from accounts.views.authenticate import SignUpView, LoginView, VerifyOTPView, ResendOTPView, CustomLogoutView
-from accounts.views.profile import profile_view
+from accounts.views.profile import profile_view, profile_edit
 
 app_name = 'accounts'
 
@@ -9,6 +9,9 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('verify_otp/', VerifyOTPView.as_view(), name='verify_otp'),
     path('resend-otp/', ResendOTPView.as_view(), name='resend_otp'),
+    path('logout/', CustomLogoutView.as_view(), name='logout'),
+    path('profile/', profile_view, name='profile'),
+    path('profile/edit/', profile_edit, name='profile_edit'),
 
     # path('auth-status/', auth_status, name='auth_status'),
     # # ویوهای لاگین و بازیابی رمز عبور
@@ -16,7 +19,7 @@ urlpatterns = [
     # path('forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
     # path('reset-password-verify/', ResetPasswordVerifyView.as_view(), name='reset_password_verify'),
     # path('reset-password-confirm/', ResetPasswordConfirmView.as_view(), name='reset_password_confirm'),
-    path('logout/', CustomLogoutView.as_view(), name='logout'),
+
     # # یا
     # path('logout/', SimpleLogoutView.as_view(), name='logout'),
     #
@@ -33,8 +36,7 @@ urlpatterns = [
     # path('password/reset/', password_reset_view, name='password_reset'),
     # path('password/reset/confirm/', password_reset_confirm_view, name='password_reset_confirm'),
 
-    path('profile/', profile_view, name='profile'),
-    # path('profile/edit/', profile_edit, name='profile_edit'),
+
     #
     # # ایمیل
     # path('email/', email_management_view, name='email_management'),

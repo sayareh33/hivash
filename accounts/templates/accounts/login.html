@@ -258,11 +258,28 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
 
+                {% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endfor %}
+{% endif %}
+
+
                 <form method="post" novalidate>
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="phone" class="form-label">{% trans "Phone Number" %}</label>
                         <input type="tel" class="form-control" id="phone" name="phone" placeholder="09xxxxxxxxx" required autofocus>
+                    {% if form.phone.errors %}
+  <div class="text-danger small mt-1">
+      {{ form.phone.errors.0 }}
+  </div>
+{% endif %}
+
                     </div>
 
                     <div class="mb-3">
@@ -272,9 +289,16 @@
                             <span class="input-group-text" id="togglePassword">
                                 <i class="bi bi-eye password-toggle"></i>
                             </span>
+                            {% if form.password.errors %}
+  <div class="text-danger small mt-1">
+      {{ form.password.errors.0 }}
+  </div>
+{% endif %}
+
                         </div>
                         <div class="form-text mt-2">
-                            <a href="#"><i class="bi bi-key me-1"></i>{% trans "?Do you forget your password" %}</a>
+                    <a href="{% url 'password_reset' %}">
+                        <i class="bi bi-key me-1"></i>{% trans "Forgot your password?" %}</a>
                         </div>
                     </div>
 
@@ -291,7 +315,9 @@
             </div>
 
             <div class="auth-footer">
-                <p class="mb-0">{% trans "Not Have Account?" %} <a href="#"><i class="bi bi-person-plus me-1"></i>{% trans "Register" %}</a></p>
+                <p class="mb-0">{% trans "Not Have Account?" %} <a href="{% url 'accounts:signup' %}">
+    <i class="bi bi-person-plus me-1"></i>{% trans "Register" %}
+</a></p>
             </div>
         </div>
     </div>

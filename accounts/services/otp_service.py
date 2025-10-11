@@ -1,13 +1,16 @@
 # accounts/services/otp_service.py
 import secrets
-
 import requests
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 import json
+import logging
 
+from config.settings import ASANAK_USERNAME, ASANAK_PASSWORD, ASANAK_SOURCE
+
+logger = logging.getLogger(__name__)
 class OTPService:
     """سرویس مدیریت امن OTP"""
 
@@ -58,18 +61,81 @@ class OTPService:
         cache.delete(cache_key)
         return True
 
+# def send_sms_via_asanak(phone, otp_code):
+#     url = "https://sms.asanak.ir/webservice/v2rest/sendsms"
+#     headers = {"Content-Type": "hivashop/x-www-form-2658f80dffb2ebe813528bd487570be2c548af948007512e30a2d92359a7664a"}
+#     payload = {
+#         "username": 'hivashop',
+#         "password": 'YaZahra79$',
+#         "template_id": '1685',
+#         "source": "۹۸۲۱۷۰۰۰۰۹۳۳۲۱۴۷۲۶",
+#         "destination": f"98{phone}",
+#         "message": "کد تایید شما {{otp_code}} آزمایش هیوا",
+#     }
+#
+#     response = requests.request("POST", url, data=payload, timeout=5)
+#     print(response.text.encode('utf8'))
+
+
 def send_sms_via_asanak(phone, otp_code):
+    # در بالای فایل services/otp_service.py
+
+    """
+    سرویس ارسال پیامک از طریق آسانک
+
+    مستندات API آسانک:
+    - URL: https://sms.asanak.ir/webservice/v2rest/sendsms
+    - Method: POST
+    - Content-Type: application/x-www-form-urlencoded
+    - پارامترهای ضروری:
+      * username: نام کاربری
+      * password: رمز عبور
+      * source: شماره فرستنده
+      * destination: شماره مقصد (با 98 شروع شود)
+      * message: متن پیام
+
+    نکات مهم:
+    1. شماره مقصد باید بدون صفر ابتدایی و با پیشوند 98 ارسال شود
+    2. متن پیام باید حاوی کد تأیید باشد
+    3. timeout ارتباط 10 ثانیه در نظر گرفته شده
+    4. خطاها به طور کامل لاگ می‌شوند
+    """
     url = "https://sms.asanak.ir/webservice/v2rest/sendsms"
-    headers = {"Content-Type": "hivashop/x-www-form-2658f80dffb2ebe813528bd487570be2c548af948007512e30a2d92359a7664a"}
+
+    # هدر صحیح
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
     payload = {
-        "username": 'hivashop',
-        "password": 'YaZahra79$',
+        "username": ASANAK_USERNAME,  # بهتر است از settings استفاده شود
+        "password": ASANAK_PASSWORD,  # بسیار خطرناک - از متغیر محیطی استفاده شود
         "template_id": '1685',
-        "source": "۹۸۲۱۷۰۰۰۰۹۳۳۲۱۴۷۲۶",
+        "source": ASANAK_SOURCE,  # فقط اعداد
         "destination": f"98{phone}",
-        "message": "کد تایید شما {{otp_code}} آزمایش هیوا",
+        "message": f"کد تایید شما {otp_code} آزمایش هیوا",
     }
 
-    response = requests.request("POST", url, data=payload, timeout=5)
-    print(response.text.encode('utf8'))
+    try:
+        response = requests.post(url, data=payload, headers=headers, timeout=10)
+        response.raise_for_status()  # بررسی خطای HTTP
+        print(response.text.encode('utf8'))
+
+        # بررسی پاسخ آسانک
+        response_data = response.text
+        logger.info(f"Asanak response for {phone}: {response_data}")
+
+        # بررسی پاسخ آسانک
+        if response.json().get('status') != '0':
+            logger.error(f"Asanak API error: {response.text}")
+            return False
+
+        logger.info(f"SMS sent to {phone} successfully")
+        return True
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"SMS sending failed for {phone}: {str(e)}")
+        return False
+
+    except Exception as e:
+        logger.error(f"Unexpected error in SMS sending for {phone}: {str(e)}")
+        return False
 

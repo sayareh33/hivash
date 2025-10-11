@@ -10,50 +10,68 @@ from .validators import validate_iranian_mobile
 from .models import CustomUser, UserProfile
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm, SetPasswordForm
 from django.contrib.auth import get_user_model
+from django_countries.widgets import CountrySelectWidget
 import re
 
 User = get_user_model()
+from django import forms
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+
+from accounts.validators import validate_iranian_mobile
+
+User = get_user_model()
+
 
 class SignUpForm(forms.Form):
     phone = forms.CharField(
-        label=_('Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù‡Ù…Ø±Ø§Ù‡'),
+        label=_("Phone number"),
         max_length=11,
-        validators=[lambda x: validate_iranian_mobile(x, 'database')],
+        required=True,
         widget=forms.TextInput(attrs={
             'placeholder': '09xxxxxxxxx',
             'class': 'form-control',
             'autocomplete': 'phone'
-        })
+        }),
+        validators=[validate_iranian_mobile],
+        help_text=_("Enter a valid Iranian mobile number (e.g., 09XXXXXXXXX).")
     )
 
     email = forms.EmailField(
-        label='Ø§ÛŒÙ…ÛŒÙ„ (Ø§Ø®ØªÛŒØ§Ø±ÛŒ)',
+        label=_("Email (optional)"),
         required=False,
         widget=forms.EmailInput(attrs={
             'placeholder': 'example@domain.com',
-            'class': 'form-control'
+            "class": "form-control"
         })
     )
 
     password = forms.CharField(
-        label=_('Ø±Ù…Ø² Ø¹Ø¨ÙˆØ±'),
+        label=_("Password"),
+        strip=False,
+        required=True,
         widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Ø­Ø¯Ø§Ù‚Ù„ Û¸ Ú©Ø§Ø±Ø§Ú©ØªØ±',
+            "placeholder": _("Enter a strong password"),
+            "class": "form-control",
             'autocomplete': 'new-password'
         }),
-        min_length=8
+        min_length=8,
+        help_text=_("Your password must contain at least 8 characters, and should not be too common.")
     )
 
     confirm_password = forms.CharField(
-        label=_('ØªÚ©Ø±Ø§Ø± Ø±Ù…Ø² Ø¹Ø¨ÙˆØ±'),
+        label=_("Confirm password"),
+        strip=False,
+        required=True,
         widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'ØªÚ©Ø±Ø§Ø± Ø±Ù…Ø² Ø¹Ø¨ÙˆØ±',
+            "placeholder": _("Repeat your password"),
+            "class": "form-control",
             'autocomplete': 'new-password'
         }),
-        min_length=8
+    min_length = 8
     )
+
     terms_accepted = forms.BooleanField(  # Ù†Ø§Ù… ÙÛŒÙ„Ø¯ Ø¨Ø§ÛŒØ¯ Ø¨Ø§ HTML Ù…Ø·Ø§Ø¨Ù‚Øª Ø¯Ø§Ø´ØªÙ‡ Ø¨Ø§Ø´Ø¯
         label='Ù…ÙˆØ§ÙÙ‚Øª Ø¨Ø§ Ø´Ø±Ø§ÛŒØ· Ø§Ø³ØªÙØ§Ø¯Ù‡',
         required=True,
@@ -62,21 +80,6 @@ class SignUpForm(forms.Form):
 
     )
 
-    # privacy_policy_accepted = forms.BooleanField(
-    #     label=_('Ù…ÙˆØ§ÙÙ‚Øª Ø¨Ø§ Ø­Ø±ÛŒÙ… Ø®ØµÙˆØµÛŒ'),
-    #     widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-    #     error_messages={'required': _('Ù„Ø·ÙØ§Ù‹ Ø­Ø±ÛŒÙ… Ø®ØµÙˆØµÛŒ Ø±Ø§ Ø¨Ù¾Ø°ÛŒØ±ÛŒØ¯')}
-    # )
-
-    def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get('password')
-        confirm_password = cleaned_data.get('confirm_password')
-
-        if password and confirm_password and password != confirm_password:
-            self.add_error('confirm_password', _('Passwords do not match.'))
-
-        return cleaned_data
 
     def clean_phone(self):
         phone = self.cleaned_data.get('phone')
@@ -95,6 +98,28 @@ class SignUpForm(forms.Form):
             return validated_phone
         except ValidationError as exc:
             raise ValidationError(exc.messages[0] if exc.messages else _('Enter a valid phone number.'))
+
+    def clean_password(self):
+        """اعتبارسنجی قدرت رمز عبور"""
+        password = self.cleaned_data.get("password")
+        try:
+            validate_password(password)
+        except forms.ValidationError as e:
+            raise forms.ValidationError(e.messages)
+        return password
+
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+
+        if password and confirm_password and password != confirm_password:
+            self.add_error('confirm_password', _('Passwords do not match.'))
+            raise forms.ValidationError(_("Passwords do not match."))
+        return cleaned_data
+
+
 
 
 class OTPVerificationForm(forms.Form):
@@ -175,14 +200,14 @@ class LoginForm(forms.Form):
 #     )
 #
 #     def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get('password')
-        confirm_password = cleaned_data.get('confirm_password')
-
-        if password and confirm_password and password != confirm_password:
-            self.add_error('confirm_password', _('Passwords do not match.'))
-
-        return cleaned_data
+#         cleaned_data = super().clean()
+#         password = cleaned_data.get('password')
+#         confirm_password = cleaned_data.get('confirm_password')
+#
+#         if password and confirm_password and password != confirm_password:
+#             self.add_error('confirm_password', _('Passwords do not match.'))
+#
+#         return cleaned_data
 #
 #
 class ResendOTPForm(forms.Form):
@@ -205,6 +230,83 @@ class PasswordResetRequestForm(forms.Form):
     )
 
 
+class ProfileEditForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = [
+            'first_name',
+            'last_name',
+            'national_code',
+            'birth_date',
+            'email',
+            'emergency_contact',
+            'country',
+            'province',
+            'city',
+            'address',
+            'postal_code',
+            'email_notifications',
+            'sms_notifications',
+        ]
+        widgets = {
+            'birth_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'address': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'country': CountrySelectWidget(attrs={'class': 'form-select'}),
+        }
+        labels = {
+            'first_name': _('نام'),
+            'last_name': _('نام خانوادگی'),
+            'national_code': _('کد ملی'),
+            'birth_date': _('تاریخ تولد'),
+            'email': _('ایمیل'),
+            'emergency_contact': _('تماس اضطراری'),
+            'country': _('کشور'),
+            'province': _('استان'),
+            'city': _('شهر'),
+            'address': _('آدرس'),
+            'postal_code': _('کد پستی'),
+            'email_notifications': _('دریافت ایمیل‌های اطلاع‌رسانی'),
+            'sms_notifications': _('دریافت پیامک‌های اطلاع‌رسانی'),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        for name, field in self.fields.items():
+            if name in ['email_notifications', 'sms_notifications']:
+                field.widget.attrs.setdefault('class', 'form-check-input')
+            elif name not in self.Meta.widgets:
+                field.widget.attrs.setdefault('class', 'form-control')
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            qs = UserProfile.objects.exclude(pk=self.instance.pk).filter(email=email)
+            if qs.exists():
+                raise ValidationError(_('این ایمیل قبلاً ثبت شده است.'))
+        return email
+
+    def clean_emergency_contact(self):
+        emergency_contact = self.cleaned_data.get('emergency_contact')
+        if emergency_contact:
+            normalized = emergency_contact.strip()
+            if not normalized.isdigit():
+                raise ValidationError(_('شماره تماس اضطراری باید فقط شامل عدد باشد.'))
+            if len(normalized) < 8 or len(normalized) > 15:
+                raise ValidationError(_('طول شماره تماس اضطراری نامعتبر است.'))
+            return normalized
+        return emergency_contact
+
+    def clean_national_code(self):
+        national_code = self.cleaned_data.get('national_code')
+        if national_code:
+            normalized = national_code.strip()
+            if not normalized.isdigit() or len(normalized) != 10:
+                raise ValidationError(_('کد ملی باید ۱۰ رقم باشد.'))
+            return normalized
+        return national_code
+
 
 # class PasswordResetConfirmForm(forms.Form):
 #     new_password = forms.CharField(
@@ -224,14 +326,14 @@ class PasswordResetRequestForm(forms.Form):
 #     )
 #
 #     def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get('password')
-        confirm_password = cleaned_data.get('confirm_password')
-
-        if password and confirm_password and password != confirm_password:
-            self.add_error('confirm_password', _('Passwords do not match.'))
-
-        return cleaned_data
+#         cleaned_data = super().clean()
+#         password = cleaned_data.get('password')
+#         confirm_password = cleaned_data.get('confirm_password')
+#
+#         if password and confirm_password and password != confirm_password:
+#             self.add_error('confirm_password', _('Passwords do not match.'))
+#
+#         return cleaned_data
 #
 #
 #
@@ -300,15 +402,15 @@ class PasswordResetRequestForm(forms.Form):
 #
 #         return password1
 #
-#     def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get('password')
-        confirm_password = cleaned_data.get('confirm_password')
-
-        if password and confirm_password and password != confirm_password:
-            self.add_error('confirm_password', _('Passwords do not match.'))
-
-        return cleaned_data
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     password = cleaned_data.get('password')
+    #     confirm_password = cleaned_data.get('confirm_password')
+    #
+    #     if password and confirm_password and password != confirm_password:
+    #         self.add_error('confirm_password', _('Passwords do not match.'))
+    #
+    #     return cleaned_data
 #
 #
 # class CustomPasswordResetForm(PasswordResetForm):
@@ -399,14 +501,14 @@ class PasswordResetRequestForm(forms.Form):
 #         return password1
 #
 #     def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get('password')
-        confirm_password = cleaned_data.get('confirm_password')
-
-        if password and confirm_password and password != confirm_password:
-            self.add_error('confirm_password', _('Passwords do not match.'))
-
-        return cleaned_data
+#         cleaned_data = super().clean()
+#         password = cleaned_data.get('password')
+#         confirm_password = cleaned_data.get('confirm_password')
+#
+#         if password and confirm_password and password != confirm_password:
+#             self.add_error('confirm_password', _('Passwords do not match.'))
+#
+#         return cleaned_data
 #
 # class UserProfileForm(forms.ModelForm):
 #     """

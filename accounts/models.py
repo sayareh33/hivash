@@ -1,10 +1,11 @@
-from django.db import models
+﻿from django.db import models
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django_countries.fields import CountryField
 from django.conf import settings
 from datetime import timedelta
 import random
@@ -15,7 +16,7 @@ from accounts.services.otp_service import send_sms_via_asanak
 
 logger = logging.getLogger(__name__)
 
-# تنظیمات
+# ØªÙ†Ø¸ÛŒÙ…Ø§Øª
 OTP_EXPIRE_MINUTES = getattr(settings, 'OTP_EXPIRE_MINUTES', 5)
 OTP_MAX_ATTEMPTS = getattr(settings, 'OTP_MAX_ATTEMPTS', 5)
 LOGIN_MAX_ATTEMPTS = getattr(settings, 'LOGIN_MAX_ATTEMPTS', 5)
@@ -24,10 +25,10 @@ LOGIN_MAX_ATTEMPTS = getattr(settings, 'LOGIN_MAX_ATTEMPTS', 5)
 class UserManager(BaseUserManager):
     def create_user(self, phone, password=None, **extra_fields):
         if not phone:
-            raise ValueError('شماره همراه الزامی است')
+            raise ValueError('Ø´Ù…Ø§Ø±Ù‡ Ù‡Ù…Ø±Ø§Ù‡ Ø§Ù„Ø²Ø§Ù…ÛŒ Ø§Ø³Øª')
 
         if not password:
-            raise ValueError('رمز عبور الزامی است')
+            raise ValueError('Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø§Ù„Ø²Ø§Ù…ÛŒ Ø§Ø³Øª')
 
         user = self.model(
             phone=phone,
@@ -52,23 +53,23 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(
         max_length=15,
         unique=True,
-        verbose_name=_('شماره تلفن'),
+        verbose_name=_('Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ†'),
         validators=[validate_iranian_mobile]
     )
 
-    # فیلدهای اصلی
-    password = models.CharField(_('رمز عبور'), max_length=128, blank=False, null=False)
-    email = models.EmailField(_('ایمیل'), blank=True, null=True)
-    is_active = models.BooleanField(_('فعال'), default=True)
-    is_staff = models.BooleanField(_('کارمند'), default=False)
-    is_superuser = models.BooleanField(_('کاربر برتر'), default=False)
+    # ÙÛŒÙ„Ø¯Ù‡Ø§ÛŒ Ø§ØµÙ„ÛŒ
+    password = models.CharField(_('Ø±Ù…Ø² Ø¹Ø¨ÙˆØ±'), max_length=128, blank=False, null=False)
+    email = models.EmailField(_('Ø§ÛŒÙ…ÛŒÙ„'), blank=True, null=True)
+    is_active = models.BooleanField(_('ÙØ¹Ø§Ù„'), default=True)
+    is_staff = models.BooleanField(_('Ú©Ø§Ø±Ù…Ù†Ø¯'), default=False)
+    is_superuser = models.BooleanField(_('Ú©Ø§Ø±Ø¨Ø± Ø¨Ø±ØªØ±'), default=False)
 
-    date_joined = models.DateTimeField(_('تاریخ عضویت'), auto_now_add=True)
+    date_joined = models.DateTimeField(_('ØªØ§Ø±ÛŒØ® Ø¹Ø¶ÙˆÛŒØª'), auto_now_add=True)
 
-    # فیلدهای تأیید
-    is_phone_verified = models.BooleanField(_('تلفن تأیید شده'), default=False)
+    # ÙÛŒÙ„Ø¯Ù‡Ø§ÛŒ ØªØ£ÛŒÛŒØ¯
+    is_phone_verified = models.BooleanField(_('ØªÙ„ÙÙ† ØªØ£ÛŒÛŒØ¯ Ø´Ø¯Ù‡'), default=False)
 
-    # فیلدهای امنیتی
+    # ÙÛŒÙ„Ø¯Ù‡Ø§ÛŒ Ø§Ù…Ù†ÛŒØªÛŒ
     otp_code = models.CharField(max_length=5, null=True, blank=True)
     otp_created_at = models.DateTimeField(null=True, blank=True)
     otp_attempts = models.PositiveIntegerField(default=0)
@@ -79,9 +80,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 #______________change phone_________
     new_phone = models.CharField(
         max_length=15, unique=True, null=True, blank=True, validators=[validate_iranian_mobile],
-        verbose_name=_('شماره جدید (در انتظار تأیید)'))
+        verbose_name=_('Ø´Ù…Ø§Ø±Ù‡ Ø¬Ø¯ÛŒØ¯ (Ø¯Ø± Ø§Ù†ØªØ¸Ø§Ø± ØªØ£ÛŒÛŒØ¯)'))
 
-    # OTP برای تأیید شماره جدید
+    # OTP Ø¨Ø±Ø§ÛŒ ØªØ£ÛŒÛŒØ¯ Ø´Ù…Ø§Ø±Ù‡ Ø¬Ø¯ÛŒØ¯
     phone_change_otp = models.CharField(max_length=6, null=True, blank=True)
     phone_change_otp_created = models.DateTimeField(null=True, blank=True)
     phone_change_otp_attempts = models.PositiveIntegerField(default=0)
@@ -92,28 +93,28 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['password']
 
     class Meta:
-        verbose_name = _('کاربر')
-        verbose_name_plural = _('کاربران')
+        verbose_name = _('Ú©Ø§Ø±Ø¨Ø±')
+        verbose_name_plural = _('Ú©Ø§Ø±Ø¨Ø±Ø§Ù†')
         db_table = 'accounts_customuser'
 
     def __str__(self):
         return self.phone
 
     def clean(self):
-        """اعتبارسنجی مدل قبل از ذخیره"""
+        """Ø§Ø¹ØªØ¨Ø§Ø±Ø³Ù†Ø¬ÛŒ Ù…Ø¯Ù„ Ù‚Ø¨Ù„ Ø§Ø² Ø°Ø®ÛŒØ±Ù‡"""
         super().clean()
 
-        # اعتبارسنجی شماره تلفن
+        # Ø§Ø¹ØªØ¨Ø§Ø±Ø³Ù†Ø¬ÛŒ Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ†
         try:
             self.phone = validate_iranian_mobile(self.phone)
         except ValidationError as e:
             raise ValidationError({'phone': e.messages})
 
     def save(self, *args, **kwargs):
-        """ذخیره کاربر با اعمال منطق مورد نیاز"""
+        """Ø°Ø®ÛŒØ±Ù‡ Ú©Ø§Ø±Ø¨Ø± Ø¨Ø§ Ø§Ø¹Ù…Ø§Ù„ Ù…Ù†Ø·Ù‚ Ù…ÙˆØ±Ø¯ Ù†ÛŒØ§Ø²"""
         self.clean()
 
-        # اگر کاربر سوپریوزر است، تأیید تلفن را تنظیم کن
+        # Ø§Ú¯Ø± Ú©Ø§Ø±Ø¨Ø± Ø³ÙˆÙ¾Ø±ÛŒÙˆØ²Ø± Ø§Ø³ØªØŒ ØªØ£ÛŒÛŒØ¯ ØªÙ„ÙÙ† Ø±Ø§ ØªÙ†Ø¸ÛŒÙ… Ú©Ù†
         if self.is_superuser:
             self.is_phone_verified = True
             self.bypass_phone_verification = True
@@ -130,23 +131,23 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             return self.profile.first_name
         return self.phone
 
-    # متدهای OTP
+    # Ù…ØªØ¯Ù‡Ø§ÛŒ OTP
     def generate_otp(self):
-        """تولید و ذخیره کد OTP با مدیریت خطا"""
+        """ØªÙˆÙ„ÛŒØ¯ Ùˆ Ø°Ø®ÛŒØ±Ù‡ Ú©Ø¯ OTP Ø¨Ø§ Ù…Ø¯ÛŒØ±ÛŒØª Ø®Ø·Ø§"""
         try:
-            # تولید کد ۶ رقمی
+            # ØªÙˆÙ„ÛŒØ¯ Ú©Ø¯ Û¶ Ø±Ù‚Ù…ÛŒ
             otp_code = f"{random.randint(0, 99999):05d}"
 
-            # به‌روزرسانی فیلدها
+            # Ø¨Ù‡â€ŒØ±ÙˆØ²Ø±Ø³Ø§Ù†ÛŒ ÙÛŒÙ„Ø¯Ù‡Ø§
             self.otp_code = otp_code
             self.otp_created_at = timezone.now()
             self.otp_attempts = 0
 
-            # ذخیره در دیتابیس
-            if self.pk:  # کاربر از قبل در دیتابیس وجود دارد
+            # Ø°Ø®ÛŒØ±Ù‡ Ø¯Ø± Ø¯ÛŒØªØ§Ø¨ÛŒØ³
+            if self.pk:  # Ú©Ø§Ø±Ø¨Ø± Ø§Ø² Ù‚Ø¨Ù„ Ø¯Ø± Ø¯ÛŒØªØ§Ø¨ÛŒØ³ ÙˆØ¬ÙˆØ¯ Ø¯Ø§Ø±Ø¯
                 self.save(update_fields=['otp_code', 'otp_created_at', 'otp_attempts'])
-            else:  # کاربر جدید
-                self.save()  # ذخیره اولیه
+            else:  # Ú©Ø§Ø±Ø¨Ø± Ø¬Ø¯ÛŒØ¯
+                self.save()  # Ø°Ø®ÛŒØ±Ù‡ Ø§ÙˆÙ„ÛŒÙ‡
 
             logger.info(f"OTP generated for user {self.phone}")
             return otp_code
@@ -156,20 +157,31 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             raise
 
     def send_otp(self):
-        """ارسال OTP"""
-        otp_code = self.generate_otp()
-        return send_sms_via_asanak(self.phone, otp_code)
+        try:
+            otp_code = self.generate_otp()
+            success = send_sms_via_asanak(self.phone, otp_code)
+
+            if not success:
+                # راه‌حل جایگزین برای ارسال پیامک
+                logger.error(f"Failed to send OTP to {self.phone}")
+                return False
+
+            return True
+
+        except Exception as e:
+            logger.error(f"OTP sending exception for {self.phone}: {str(e)}")
+            return False
 
     def verify_otp(self, code):
-        """تأیید OTP"""
+        """ØªØ£ÛŒÛŒØ¯ OTP"""
         if self.is_locked:
-            return False, "حساب قفل شده است"
+            return False, "Ø­Ø³Ø§Ø¨ Ù‚ÙÙ„ Ø´Ø¯Ù‡ Ø§Ø³Øª"
 
         if not self.otp_code or not self.otp_created_at:
-            return False, "کد OTP وجود ندارد"
+            return False, "Ú©Ø¯ OTP ÙˆØ¬ÙˆØ¯ Ù†Ø¯Ø§Ø±Ø¯"
 
         if self.is_otp_expired():
-            return False, "کد OTP منقضی شده است"
+            return False, "Ú©Ø¯ OTP Ù…Ù†Ù‚Ø¶ÛŒ Ø´Ø¯Ù‡ Ø§Ø³Øª"
 
         if str(code).strip() == str(self.otp_code).strip():
             self.otp_code = None
@@ -177,23 +189,23 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             self.otp_attempts = 0
             self.is_phone_verified = True
             self.save()
-            return True, "تأیید موفق"
+            return True, "ØªØ£ÛŒÛŒØ¯ Ù…ÙˆÙÙ‚"
         else:
             self.otp_attempts += 1
             if self.otp_attempts >= OTP_MAX_ATTEMPTS:
                 self.lock_account()
             self.save()
-            return False, "کد OTP نامعتبر است"
+            return False, "Ú©Ø¯ OTP Ù†Ø§Ù…Ø¹ØªØ¨Ø± Ø§Ø³Øª"
 
     def is_otp_expired(self):
-        """بررسی انقضای OTP"""
+        """Ø¨Ø±Ø±Ø³ÛŒ Ø§Ù†Ù‚Ø¶Ø§ÛŒ OTP"""
         if not self.otp_created_at:
             return True
         return timezone.now() > self.otp_created_at + timedelta(minutes=OTP_EXPIRE_MINUTES)
 
     @property
     def is_locked(self):
-        """بررسی قفل بودن حساب"""
+        """Ø¨Ø±Ø±Ø³ÛŒ Ù‚ÙÙ„ Ø¨ÙˆØ¯Ù† Ø­Ø³Ø§Ø¨"""
         if self.locked_until and timezone.now() < self.locked_until:
             return True
         elif self.locked_until and timezone.now() >= self.locked_until:
@@ -202,12 +214,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return False
 
     def lock_account(self, minutes=30):
-        """قفل کردن حساب"""
+        """Ù‚ÙÙ„ Ú©Ø±Ø¯Ù† Ø­Ø³Ø§Ø¨"""
         self.locked_until = timezone.now() + timedelta(minutes=minutes)
         self.save()
 
     def unlock_account(self):
-        """باز کردن قفل حساب"""
+        """Ø¨Ø§Ø² Ú©Ø±Ø¯Ù† Ù‚ÙÙ„ Ø­Ø³Ø§Ø¨"""
         self.locked_until = None
         self.otp_attempts = 0
         self.login_attempts = 0
@@ -216,34 +228,36 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 User = get_user_model()
 
 class UserProfile(models.Model):
-    user = models.OneToOneField( User, on_delete=models.CASCADE, related_name='profile', verbose_name=_('کاربر'))
+    user = models.OneToOneField( User, on_delete=models.CASCADE, related_name='profile', verbose_name=_('Ú©Ø§Ø±Ø¨Ø±'))
 
-    # اطلاعات شخصی
-    first_name = models.CharField(_('نام'), max_length=100, blank=True)
-    last_name = models.CharField(_('نام خانوادگی'), max_length=100, blank=True)
-    national_code = models.CharField(_('کد ملی'), max_length=10, blank=True)
-    birth_date = models.DateField(_('تاریخ تولد'), null=True, blank=True)
+    # Ø§Ø·Ù„Ø§Ø¹Ø§Øª Ø´Ø®ØµÛŒ
+    first_name = models.CharField(_('Ù†Ø§Ù…'), max_length=100, blank=True)
+    last_name = models.CharField(_('Ù†Ø§Ù… Ø®Ø§Ù†ÙˆØ§Ø¯Ú¯ÛŒ'), max_length=100, blank=True)
+    national_code = models.CharField(_('Ú©Ø¯ Ù…Ù„ÛŒ'), max_length=10, blank=True)
+    birth_date = models.DateField(_('ØªØ§Ø±ÛŒØ® ØªÙˆÙ„Ø¯'), null=True, blank=True)
 
-    # اطلاعات تماس
-    email = models.EmailField(_('ایمیل'), blank=True, null=True)
-    phone = models.CharField(_('تلفن ثابت'), max_length=15, blank=True, validators=[validate_iranian_mobile])
+    # Ø§Ø·Ù„Ø§Ø¹Ø§Øª ØªÙ…Ø§Ø³
+    email = models.EmailField(_('Ø§ÛŒÙ…ÛŒÙ„'), blank=True, null=True)
+    phone = models.CharField(_('ØªÙ„ÙÙ† Ø«Ø§Ø¨Øª'), max_length=15, blank=True, validators=[validate_iranian_mobile])
+    emergency_contact = models.CharField(_('Emergency contact'), max_length=20, blank=True, null=True)
 
-    # آدرس
-    province = models.CharField(_('استان'), max_length=100, blank=True)
-    city = models.CharField(_('شهر'), max_length=100, blank=True)
-    address = models.TextField(_('آدرس'), blank=True)
-    postal_code = models.CharField(_('کد پستی'), max_length=10, blank=True)
+    # Ø¢Ø¯Ø±Ø³
+    country = CountryField(_('Country'), blank=True, null=True)
+    province = models.CharField(_('Ø§Ø³ØªØ§Ù†'), max_length=100, blank=True)
+    city = models.CharField(_('Ø´Ù‡Ø±'), max_length=100, blank=True)
+    address = models.TextField(_('Ø¢Ø¯Ø±Ø³'), blank=True)
+    postal_code = models.CharField(_('Ú©Ø¯ Ù¾Ø³ØªÛŒ'), max_length=10, blank=True)
 
-    # تنظیمات
-    email_notifications = models.BooleanField(_('اعلان ایمیلی'), default=True)
-    sms_notifications = models.BooleanField(_('اعلان پیامکی'), default=True)
+    # ØªÙ†Ø¸ÛŒÙ…Ø§Øª
+    email_notifications = models.BooleanField(_('Ø§Ø¹Ù„Ø§Ù† Ø§ÛŒÙ…ÛŒÙ„ÛŒ'), default=True)
+    sms_notifications = models.BooleanField(_('Ø§Ø¹Ù„Ø§Ù† Ù¾ÛŒØ§Ù…Ú©ÛŒ'), default=True)
 
-    created_at = models.DateTimeField(_('تاریخ ایجاد'), auto_now_add=True)
-    updated_at = models.DateTimeField(_('آخرین بروزرسانی'), auto_now=True)
+    created_at = models.DateTimeField(_('ØªØ§Ø±ÛŒØ® Ø§ÛŒØ¬Ø§Ø¯'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('Ø¢Ø®Ø±ÛŒÙ† Ø¨Ø±ÙˆØ²Ø±Ø³Ø§Ù†ÛŒ'), auto_now=True)
 
     class Meta:
-        verbose_name = _('پروفایل کاربر')
-        verbose_name_plural = _('پروفایل کاربران')
+        verbose_name = _('Ù¾Ø±ÙˆÙØ§ÛŒÙ„ Ú©Ø§Ø±Ø¨Ø±')
+        verbose_name_plural = _('Ù¾Ø±ÙˆÙØ§ÛŒÙ„ Ú©Ø§Ø±Ø¨Ø±Ø§Ù†')
 
     def __str__(self):
         return f"{self.user.phone} - {self.get_full_name()}"
@@ -253,42 +267,42 @@ class UserProfile(models.Model):
 
     @property
     def is_complete(self):
-        """بررسی کامل بودن پروفایل برای خرید"""
+        """Ø¨Ø±Ø±Ø³ÛŒ Ú©Ø§Ù…Ù„ Ø¨ÙˆØ¯Ù† Ù¾Ø±ÙˆÙØ§ÛŒÙ„ Ø¨Ø±Ø§ÛŒ Ø®Ø±ÛŒØ¯"""
         required_fields = ['first_name', 'last_name', 'province', 'city', 'address', 'postal_code']
         return all(bool(getattr(self, field)) for field in required_fields)
 
     class Address(models.Model):
-        """مدل آدرس برای کاربران (اگر نیاز به چند آدرس دارید)"""
+        """Ù…Ø¯Ù„ Ø¢Ø¯Ø±Ø³ Ø¨Ø±Ø§ÛŒ Ú©Ø§Ø±Ø¨Ø±Ø§Ù† (Ø§Ú¯Ø± Ù†ÛŒØ§Ø² Ø¨Ù‡ Ú†Ù†Ø¯ Ø¢Ø¯Ø±Ø³ Ø¯Ø§Ø±ÛŒØ¯)"""
         user = models.ForeignKey(
             User,
             on_delete=models.CASCADE,
             related_name='addresses',
-            verbose_name=_('کاربر')
+            verbose_name=_('Ú©Ø§Ø±Ø¨Ø±')
         )
 
-        title = models.CharField(_('عنوان آدرس'), max_length=100)
-        first_name = models.CharField(_('نام'), max_length=100)
-        last_name = models.CharField(_('نام خانوادگی'), max_length=100)
-        phone = models.CharField(_('تلفن'), max_length=15, validators=[validate_iranian_mobile])
-        province = models.CharField(_('استان'), max_length=100)
-        city = models.CharField(_('شهر'), max_length=100)
-        address = models.TextField(_('آدرس'))
-        postal_code = models.CharField(_('کد پستی'), max_length=10)
-        is_default = models.BooleanField(_('پیش‌فرض'), default=False)
+        title = models.CharField(_('Ø¹Ù†ÙˆØ§Ù† Ø¢Ø¯Ø±Ø³'), max_length=100)
+        first_name = models.CharField(_('Ù†Ø§Ù…'), max_length=100)
+        last_name = models.CharField(_('Ù†Ø§Ù… Ø®Ø§Ù†ÙˆØ§Ø¯Ú¯ÛŒ'), max_length=100)
+        phone = models.CharField(_('ØªÙ„ÙÙ†'), max_length=15, validators=[validate_iranian_mobile])
+        province = models.CharField(_('Ø§Ø³ØªØ§Ù†'), max_length=100)
+        city = models.CharField(_('Ø´Ù‡Ø±'), max_length=100)
+        address = models.TextField(_('Ø¢Ø¯Ø±Ø³'))
+        postal_code = models.CharField(_('Ú©Ø¯ Ù¾Ø³ØªÛŒ'), max_length=10)
+        is_default = models.BooleanField(_('Ù¾ÛŒØ´â€ŒÙØ±Ø¶'), default=False)
 
         created_at = models.DateTimeField(auto_now_add=True)
         updated_at = models.DateTimeField(auto_now=True)
 
         class Meta:
-            verbose_name = _('آدرس')
-            verbose_name_plural = _('آدرس‌ها')
+            verbose_name = _('Ø¢Ø¯Ø±Ø³')
+            verbose_name_plural = _('Ø¢Ø¯Ø±Ø³â€ŒÙ‡Ø§')
             ordering = ['-is_default', '-created_at']
 
         def __str__(self):
             return f"{self.title} - {self.user.phone}"
 
 class LoginHistory(models.Model):
-    """تاریخچه ورود"""
+    """ØªØ§Ø±ÛŒØ®Ú†Ù‡ ÙˆØ±ÙˆØ¯"""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -300,17 +314,17 @@ class LoginHistory(models.Model):
     is_successful = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = _('تاریخچه ورود')
-        verbose_name_plural = _('تاریخچه ورودها')
+        verbose_name = _('ØªØ§Ø±ÛŒØ®Ú†Ù‡ ÙˆØ±ÙˆØ¯')
+        verbose_name_plural = _('ØªØ§Ø±ÛŒØ®Ú†Ù‡ ÙˆØ±ÙˆØ¯Ù‡Ø§')
         ordering = ['-login_at']
 
 
 class PhoneChangeHistory(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'در انتظار تأیید'),
-        ('verified', 'تأیید شده'),
-        ('expired', 'منقضی شده'),
-        ('cancelled', 'لغو شده'),
+        ('pending', 'Ø¯Ø± Ø§Ù†ØªØ¸Ø§Ø± ØªØ£ÛŒÛŒØ¯'),
+        ('verified', 'ØªØ£ÛŒÛŒØ¯ Ø´Ø¯Ù‡'),
+        ('expired', 'Ù…Ù†Ù‚Ø¶ÛŒ Ø´Ø¯Ù‡'),
+        ('cancelled', 'Ù„ØºÙˆ Ø´Ø¯Ù‡'),
     ]
 
     user = models.ForeignKey(
@@ -326,12 +340,12 @@ class PhoneChangeHistory(models.Model):
     verified_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        verbose_name = 'تاریخچه تغییر شماره تلفن'
-        verbose_name_plural = 'تاریخچه تغییرات شماره تلفن'
+        verbose_name = 'ØªØ§Ø±ÛŒØ®Ú†Ù‡ ØªØºÛŒÛŒØ± Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ†'
+        verbose_name_plural = 'ØªØ§Ø±ÛŒØ®Ú†Ù‡ ØªØºÛŒÛŒØ±Ø§Øª Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ†'
         ordering = ['-created_at']
 
 class SMSLog(models.Model):
-    """لاگ پیامک"""
+    """Ù„Ø§Ú¯ Ù¾ÛŒØ§Ù…Ú©"""
     phone = models.CharField(max_length=15, validators=[validate_iranian_mobile])
     code = models.CharField(max_length=6)
     ip_address = models.GenericIPAddressField()
@@ -339,7 +353,7 @@ class SMSLog(models.Model):
     status = models.CharField(max_length=20, default='sending')
 
     class Meta:
-        verbose_name = _('لاگ پیامک')
-        verbose_name_plural = _('لاگ‌های پیامک')
+        verbose_name = _('Ù„Ø§Ú¯ Ù¾ÛŒØ§Ù…Ú©')
+        verbose_name_plural = _('Ù„Ø§Ú¯â€ŒÙ‡Ø§ÛŒ Ù¾ÛŒØ§Ù…Ú©')
         ordering = ['-created_at']
 

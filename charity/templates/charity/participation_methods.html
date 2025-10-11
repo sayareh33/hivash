@@ -1,0 +1,80 @@
+{% extends '_base.html' %}
+
+{% block title %}روش‌های مشارکت{% endblock %}
+
+{% block extra_css %}
+<style>
+    .participation-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .participation-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 36px rgba(15, 52, 96, 0.12);
+    }
+
+    .stat-card {
+        background: #fff;
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 12px 30px rgba(15, 52, 96, 0.08);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container my-5">
+    <div class="row justify-content-center text-center mb-5">
+        <div class="col-lg-8">
+            <h1 class="h3 fw-bold mb-3">چطور می‌توانم همراه شوم؟</h1>
+            <p class="text-muted">
+                انتخاب مسیر دقیق برای هر حامی اهمیت دارد. ما راه‌های متنوعی برای پیوستن به
+                «یاوران مهربان» تعریف کرده‌ایم تا هر شخص بتواند به تناسب توانمندی خود اثرگذار باشد.
+            </p>
+        </div>
+    </div>
+
+    {% if methods %}
+    <div class="row g-4">
+        {% for method in methods %}
+        <div class="col-md-4">
+            <div class="participation-card h-100 bg-white rounded-4 p-4 shadow-sm">
+                {% if method.icon %}
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle mb-3" style="width: 56px; height: 56px;">
+                    <i class="{{ method.icon }} fs-4"></i>
+                </div>
+                {% endif %}
+                <h2 class="h5 fw-bold">{{ method.title }}</h2>
+                <p class="text-muted small">{{ method.description }}</p>
+                {% if method.action_url %}
+                <a href="{{ method.action_url }}" class="btn btn-outline-primary btn-sm mt-3">
+                    {{ method.action_text|default:"شروع همراهی" }}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">مسیرهای مشارکت به‌زودی معرفی می‌شوند.</div>
+    {% endif %}
+</section>
+
+{% if impact_stats %}
+<section class="container my-5">
+    <div class="row g-4">
+        {% for stat in impact_stats %}
+        <div class="col-md-3">
+            <div class="stat-card bg-white rounded-4 text-center p-3 shadow-sm h-100">
+                <h3 class="h4 text-primary fw-bold mb-1">{{ stat.value }}</h3>
+                {% if stat.unit %}
+                <p class="text-muted small mb-0">{{ stat.unit }}</p>
+                {% endif %}
+                <p class="fw-semibold mb-0">{{ stat.title }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

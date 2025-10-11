@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     'bootstrap5',
     # 'django_extensions',
     'crispy_forms',
-    # 'crispy_bootstrap5',
+    'crispy_bootstrap5',
     # Local
     'accounts.apps.AccountsConfig',
     "analytics.apps.AnalyticsConfig",
@@ -458,4 +458,10 @@ VISIT_RETENTION_DAYS = 365
 
 # optional: customize bot UA substrings
 VISIT_BOT_USER_AGENT_SUBSTRINGS = ['bot', 'crawl', 'spider', 'slurp', 'bingpreview']
+
+# settings.py
+ASANAK_USERNAME = os.getenv('ASANAK_USERNAME')
+ASANAK_PASSWORD = os.getenv('ASANAK_PASSWORD')
+ASANAK_SOURCE = os.getenv('ASANAK_SOURCE')
+ASANAK_SMS_URL = "https://sms.asanak.ir/webservice/v2rest/sendsms"
 

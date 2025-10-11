@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+{% load bootstrap5 %}
+{% load static i18n humanize jformat %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "ثبت نام - خانه هیوا" %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://v1.fontapi.ir/css/Vazir" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #4caf50;
+            --secondary: #ffc107;
+            --background: #f1f5f9;
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --border: rgba(255, 255, 255, 0.25);
+            --radius: 20px;
+        }
+
+        body {
+            font-family: Vazir, sans-serif;
+            background: linear-gradient(135deg, #a8e063, #f9d423);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(15px);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            padding: 2rem 2.5rem;
+            max-width: 450px;
+            width: 100%;
+            color: #fff;
+            animation: fadeIn 0.7s ease;
+        }
+
+        .glass-card h4 {
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            text-align: center;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            border-radius: 10px;
+            padding: 0.8rem;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.3);
+        }
+
+        .btn-glass {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            padding: 0.9rem;
+            border-radius: 10px;
+            width: 100%;
+            transition: 0.3s ease;
+        }
+
+        .btn-glass:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(255, 193, 7, 0.2);
+        }
+
+        .switch-mode {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .switch-mode a {
+            color: #fff;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .switch-mode a:hover {
+            color: var(--secondary);
+        }
+
+        .password-toggle {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .password-hint {
+            font-size: 0.8rem;
+            color: #f5f5f5;
+            margin-top: 0.25rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @media (max-width: 576px) {
+            .glass-card {
+                padding: 1.5rem;
+                border-radius: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="glass-card">
+    <div class="text-center mb-4">
+        <img src="{% static 'img/logo/lopy.png' %}" alt="لوگو" style="height:60px;">
+        <h4>{% trans "ساخت حساب کاربری" %}</h4>
+    </div>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% bootstrap_messages %}
+
+        <div class="mb-3">
+            <label class="form-label" for="id_phone">{% trans "شماره موبایل" %}</label>
+            <input type="tel" name="phone" id="id_phone" class="form-control" placeholder="09xxxxxxxxx" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="id_email">{% trans "ایمیل (اختیاری)" %}</label>
+            <input type="email" name="email" id="id_email" class="form-control" placeholder="example@email.com">
+        </div>
+
+        <div class="mb-3 input-group">
+            <label class="form-label" for="id_password">{% trans "رمز عبور" %}</label>
+            <input type="password" name="password" id="id_password" class="form-control" required>
+            <i class="bi bi-eye password-toggle" id="togglePassword"></i>
+            <div class="password-hint">{% trans "حداقل ۸ کاراکتر شامل عدد و حرف" %}</div>
+        </div>
+
+        <div class="mb-3 input-group">
+            <label class="form-label" for="id_confirm_password">{% trans "تکرار رمز عبور" %}</label>
+            <input type="password" name="confirm_password" id="id_confirm_password" class="form-control" required>
+            <i class="bi bi-eye password-toggle" id="toggleConfirmPassword"></i>
+        </div>
+
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="terms" required>
+            <label for="terms" class="form-check-label">{% trans "با قوانین و شرایط موافقم" %}</label>
+        </div>
+
+        <button type="submit" class="btn-glass">{% trans "ایجاد حساب" %}</button>
+
+        <div class="switch-mode">
+            <p class="mt-3">
+                {% trans "قبلاً حساب داری؟" %}
+                <a href="{% url 'accounts:login' %}"><i class="bi bi-box-arrow-in-left me-1"></i>{% trans "ورود" %}</a>
+            </p>
+        </div>
+    </form>
+</div>
+
+<script>
+    // نمایش/مخفی‌سازی رمز عبور
+    const toggle = (btnId, inputId) => {
+        const btn = document.getElementById(btnId);
+        const input = document.getElementById(inputId);
+        btn.addEventListener("click", () => {
+            const type = input.type === "password" ? "text" : "password";
+            input.type = type;
+            btn.classList.toggle("bi-eye-slash");
+        });
+    };
+    toggle("togglePassword", "id_password");
+    toggle("toggleConfirmPassword", "id_confirm_password");
+</script>
+</body>
+</html>

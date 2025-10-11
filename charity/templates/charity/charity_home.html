@@ -1,0 +1,887 @@
+{% extends '_base.html' %}
+{% load static humanize %}
+
+{% block title %}خیریه هیوا | گستره مهربانی{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --charity-ink: #2f2b32;
+    --charity-cream: #fbf5ea;
+    --charity-blush: #fde4d4;
+    --charity-teal: #3aa5a5;
+    --charity-sun: #f6b041;
+    --charity-forest: #2f8f6b;
+    --charity-rose: #ee6b6e;
+    --charity-violet: #8066ff;
+    --charity-sky: #5fa9ff;
+  }
+
+  .charity-hero {
+    background: linear-gradient(135deg, rgba(47, 43, 50, 0.75), rgba(238, 107, 110, 0.75)),
+                url("{% static 'img/donate.jpg' %}") center/cover no-repeat;
+    border-radius: 36px;
+    color: #fff;
+    padding: clamp(3.5rem, 5vw, 6rem);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .charity-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.18), transparent 55%);
+    pointer-events: none;
+  }
+
+  .charity-hero__badge {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 1.4rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+  }
+
+  .charity-hero__headline {
+    font-size: clamp(2.3rem, 3vw + 1rem, 3.6rem);
+    line-height: 1.4;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+  }
+
+  .metric-pill {
+    border-radius: 24px;
+    padding: 1.6rem;
+    box-shadow: 0 18px 36px rgba(47, 43, 50, 0.12);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .metric-pill::after {
+    content: "";
+    position: absolute;
+    inset: -40% 50% 10% -10%;
+    background: rgba(255, 255, 255, 0.12);
+    transform: rotate(18deg);
+  }
+
+  .metric-pill__icon {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .metric-pill--teal {
+    background: linear-gradient(135deg, var(--charity-teal), #2d6e6e);
+  }
+
+  .metric-pill--forest {
+    background: linear-gradient(135deg, var(--charity-forest), #245f4a);
+  }
+
+  .metric-pill--sun {
+    background: linear-gradient(135deg, var(--charity-sun), #f08700);
+  }
+
+  .metric-pill--violet {
+    background: linear-gradient(135deg, var(--charity-violet), #5a3fd4);
+  }
+
+  .spotlight-strip {
+    background: var(--charity-cream);
+    border-radius: 28px;
+    padding: clamp(2rem, 4vw, 3rem);
+    border: 1px solid rgba(47, 43, 50, 0.08);
+  }
+
+  .spotlight-card,
+  .project-teaser {
+    background: #fff;
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-shadow: 0 16px 36px rgba(47, 43, 50, 0.12);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(47, 43, 50, 0.08);
+  }
+
+  .spotlight-card:hover,
+  .project-teaser:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 24px 52px rgba(47, 43, 50, 0.18);
+  }
+
+  .project-cover {
+    height: 220px;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  .project-body {
+    padding: 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    flex-grow: 1;
+  }
+
+  .progress {
+    height: 0.75rem;
+    border-radius: 999px;
+    background-color: rgba(47, 43, 50, 0.1);
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    background: linear-gradient(135deg, var(--charity-teal), var(--charity-sun));
+  }
+
+  .donation-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 2rem;
+    height: 100%;
+    border: 1px solid rgba(47, 43, 50, 0.08);
+    box-shadow: 0 16px 34px rgba(47, 43, 50, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .donation-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 48px rgba(47, 43, 50, 0.12);
+  }
+
+  .donation-card__amount {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 1.25rem;
+  }
+
+  .donation-card--emerald {
+    border-top: 5px solid var(--charity-forest);
+  }
+
+  .donation-card--royal {
+    border-top: 5px solid var(--charity-violet);
+  }
+
+  .donation-card--amber {
+    border-top: 5px solid var(--charity-sun);
+  }
+
+  .donation-card__badge {
+    position: absolute;
+    top: -18px;
+    inset-inline-end: 24px;
+    background: var(--charity-violet);
+    color: #fff;
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+  }
+
+  .participation-grid,
+  .channels-grid,
+  .spiritual-grid,
+  .faq-grid,
+  .testimonial-grid,
+  .bank-grid,
+  .impact-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .participation-grid,
+    .channels-grid,
+    .impact-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .testimonial-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .bank-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 992px) {
+    .participation-grid,
+    .testimonial-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .channels-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .spiritual-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .participation-card,
+  .channel-card,
+  .spiritual-card,
+  .faq-card,
+  .testimonial-card,
+  .impact-card,
+  .bank-card {
+    background: #fff;
+    border-radius: 22px;
+    padding: 1.6rem;
+    border: 1px solid rgba(47, 43, 50, 0.08);
+    box-shadow: 0 16px 32px rgba(47, 43, 50, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+  }
+
+  .participation-card:hover,
+  .channel-card:hover,
+  .spiritual-card:hover,
+  .faq-card:hover,
+  .testimonial-card:hover,
+  .impact-card:hover,
+  .bank-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 44px rgba(47, 43, 50, 0.14);
+  }
+
+  .participation-card i,
+  .channel-card i,
+  .spiritual-card i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    background: rgba(47, 43, 50, 0.08);
+    color: var(--charity-ink);
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .bank-card__number {
+    font-size: 1.4rem;
+    font-weight: 700;
+    direction: ltr;
+    unicode-bidi: bidi-override;
+    letter-spacing: 0.25rem;
+  }
+
+  .testimonial-card__header {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.2rem;
+  }
+
+  .testimonial-card__header img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .faq-card__question {
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 0.85rem;
+    color: var(--charity-ink);
+  }
+
+  .cta-banner {
+    background: linear-gradient(135deg, var(--charity-sun), var(--charity-rose));
+    color: #fff;
+    border-radius: 32px;
+    padding: clamp(2.5rem, 4vw, 4rem);
+    box-shadow: 0 26px 52px rgba(47, 43, 50, 0.22);
+  }
+
+  .btn-charity-light {
+    background: #fff;
+    color: var(--charity-rose);
+    border-radius: 999px;
+    padding: 0.75rem 2.8rem;
+    font-weight: 600;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .btn-charity-light:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(255, 255, 255, 0.24);
+    color: var(--charity-rose);
+  }
+
+  .btn-outline-secondary {
+    color: var(--charity-ink);
+    border-color: rgba(47, 43, 50, 0.18);
+  }
+
+  .btn-outline-secondary:hover,
+  .btn-outline-secondary:focus {
+    background: rgba(95, 169, 255, 0.12);
+    border-color: rgba(95, 169, 255, 0.26);
+    color: var(--charity-ink);
+  }
+
+  .badge-soft {
+    background: rgba(47, 43, 50, 0.1);
+    border-radius: 999px;
+    padding: 0.45rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <section class="charity-hero">
+    <div class="row g-5 align-items-center position-relative">
+      <div class="col-lg-6 order-lg-2">
+        <span class="charity-hero__badge mb-3">
+          <i class="bi bi-balloon-heart"></i>
+          همراهی شما معنای زندگی دوباره است
+        </span>
+        <h1 class="charity-hero__headline">
+          هر لبخندی که به دنیا بازمی‌گردد، نتیجه دست‌های مهربان شماست
+        </h1>
+        <p class="lead mb-4">
+          در خیریه هیوا، هر پروژه داستان واقعی یک خانواده است. با شفافیت مالی کامل، گزارش‌های تصویری و امکان مشارکت معنوی و مادی، می‌توانید در کنار ما آینده‌ای روشن‌تر بسازید.
+        </p>
+        <div class="d-flex flex-column flex-sm-row gap-3">
+          <a href="{% url 'charity:project_list' %}?status=active" class="btn btn-light btn-lg px-4">
+            مشاهده پروژه‌های در حال اجرا
+          </a>
+          <a href="#donation-plans" class="btn-charity-light btn btn-lg px-4">
+            انتخاب نوع کمک
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-6 order-lg-1">
+        <div class="bg-white text-dark rounded-4 shadow-lg p-4 h-100 d-flex flex-column justify-content-center">
+          <p class="text-muted mb-3">تا این لحظه با همراهی شما:</p>
+          <h2 class="display-5 fw-bold mb-4 text-primary">
+            {{ total_raised|floatformat:0|intcomma }} <small class="fs-5 text-muted">تومان</small>
+          </h2>
+          <ul class="list-unstyled mb-0 text-secondary">
+            <li class="mb-2"><i class="bi bi-check-circle-fill text-success ms-2"></i> گزارش مالی هر پروژه لحظه‌ای به‌روزرسانی می‌شود</li>
+            <li class="mb-2"><i class="bi bi-check-circle-fill text-success ms-2"></i> تصاویر و ویدیوهای توزیع در صفحه هر پروژه منتشر می‌شود</li>
+            <li><i class="bi bi-check-circle-fill text-success ms-2"></i> رسیدهای پرداخت شما در پروفایل کاربری بایگانی می‌شود</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+{% if highlight_stats %}
+<section class="container my-5">
+  <div class="row g-4">
+    {% for stat in highlight_stats %}
+    <div class="col-md-6 col-xl-3">
+      <div class="metric-pill metric-pill--{{ stat.accent }}">
+        <i class="metric-pill__icon {{ stat.icon }}"></i>
+        <div class="d-flex align-items-baseline gap-2">
+          <span class="display-6 fw-bold js-animated-number" data-target="{{ stat.value }}" data-format="{{ stat.format|default:'number' }}">0</span>
+          {% if stat.format == 'currency' %}<small>تومان</small>{% endif %}
+        </div>
+        <p class="mb-0">{{ stat.label }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if spotlight_projects %}
+<section class="container my-5">
+  <div class="spotlight-strip">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between gap-3 mb-4">
+      <div>
+        <span class="badge-soft mb-3">پروژه‌های داغ همین حالا</span>
+        <h2 class="h2 fw-bold mb-2">سه پرونده‌ای که امروز به کمک شما نزدیک‌تر می‌شوند</h2>
+        <p class="text-muted mb-0">
+          با ورود به صفحه هر پروژه می‌توانید تصاویر، ویدیوها و گزارش مالی کامل آن را ببینید و تصمیم بگیرید چگونه همراه شوید.
+        </p>
+      </div>
+      <a class="btn btn-outline-secondary px-4" href="{% url 'charity:project_list' %}?status=active">
+        مشاهده همه پروژه‌های فعال
+      </a>
+    </div>
+    <div class="row g-4">
+      {% for project in spotlight_projects %}
+      <div class="col-lg-4">
+        <article class="spotlight-card">
+          {% if project.image %}
+          <img src="{{ project.image.url }}" alt="{{ project.title }}" class="project-cover">
+          {% else %}
+          <img src="{% static 'img/donate.jpg' %}" alt="{{ project.title }}" class="project-cover">
+          {% endif %}
+          <div class="project-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="badge bg-light text-secondary rounded-pill px-3 py-2">{{ project.get_status_display }}</span>
+              <small class="text-muted">{{ project.remaining_days }} روز تا پایان</small>
+            </div>
+            <h3 class="h5 fw-bold mb-1">{{ project.title }}</h3>
+            <p class="text-muted small mb-0">{{ project.short_description }}</p>
+            <div>
+              <div class="progress my-3" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ project.progress }}">
+                <div class="progress-bar" style="width: {{ project.progress }}%;"></div>
+              </div>
+              <div class="d-flex justify-content-between small text-muted">
+                <span>{{ project.current_amount|floatformat:0|intcomma }} تومان</span>
+                <span>هدف: {{ project.target_amount|floatformat:0|intcomma }} تومان</span>
+              </div>
+            </div>
+            <a href="{% url 'charity:project_detail' project.slug %}" class="btn btn-primary w-100">
+              مشاهده جزئیات و گزارش کامل
+            </a>
+          </div>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if active_projects %}
+<section class="container my-5">
+  <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between gap-3 mb-4">
+    <div>
+      <h2 class="h2 fw-bold mb-2">پروژه‌های در حال اجرا</h2>
+      <p class="text-muted mb-0">
+        از ساخت سرپناه و تأمین درمان تا جهیزیه و حمایت تحصیلی؛ با انتخاب هر پروژه می‌توانید لحظه‌به‌لحظه روند پیشرفت را دنبال کنید.
+      </p>
+    </div>
+    <a class="btn btn-link fw-semibold" href="{% url 'charity:project_list' %}?status=active">
+      همه موارد
+      <i class="bi bi-arrow-left-short"></i>
+    </a>
+  </div>
+  <div class="row g-4">
+    {% for project in active_projects %}
+    <div class="col-md-6 col-xl-4">
+      <article class="project-teaser">
+        {% if project.image %}
+        <img src="{{ project.image.url }}" alt="{{ project.title }}" class="project-cover">
+        {% else %}
+        <img src="{% static 'img/donate.jpg' %}" alt="{{ project.title }}" class="project-cover">
+        {% endif %}
+        <div class="project-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="badge bg-primary-subtle text-primary rounded-pill">{{ project.get_status_display }}</span>
+            <small class="text-muted">{{ project.start_date|date:"Y/m/d" }}</small>
+          </div>
+          <h3 class="h6 fw-bold mb-1">{{ project.title }}</h3>
+          <p class="text-muted small mb-0">
+            {% if project.impact_summary %}
+            {{ project.impact_summary }}
+            {% else %}
+            {{ project.short_description }}
+            {% endif %}
+          </p>
+          <div>
+            <div class="progress my-3">
+              <div class="progress-bar" style="width: {{ project.progress }}%;"></div>
+            </div>
+            <div class="d-flex justify-content-between small text-muted">
+              <span>{{ project.current_amount|floatformat:0|intcomma }} تومان</span>
+              <span>{{ project.progress }}٪</span>
+            </div>
+          </div>
+          <a href="{% url 'charity:project_detail' project.slug %}" class="btn btn-outline-secondary w-100">
+            ورود به صفحه پروژه
+          </a>
+        </div>
+      </article>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if donation_plans %}
+<section class="container my-5" id="donation-plans">
+  <div class="text-center mb-5">
+    <span class="badge-soft mb-3">روش‌های مشارکت مالی</span>
+    <h2 class="h2 fw-bold mb-2">سبک کمک‌رسانی مناسب خود را انتخاب کنید</h2>
+    <p class="text-muted mb-0">هر مقدار که بتوانید کمک کنید، تفاوت ایجاد می‌کند. با انتخاب یکی از طرح‌های زیر، گزارش اختصاصی دریافت خواهید کرد.</p>
+  </div>
+  <div class="row g-4">
+    {% for plan in donation_plans %}
+    <div class="col-md-4">
+      <article class="donation-card donation-card--{{ plan.variant }}">
+        {% if plan.badge %}
+        <span class="donation-card__badge">{{ plan.badge }}</span>
+        {% endif %}
+        <h3 class="h5 fw-bold mb-2">{{ plan.title }}</h3>
+        <p class="text-muted mb-3">{{ plan.tagline }}</p>
+        <div class="donation-card__amount text-primary">{{ plan.amount }}</div>
+        <ul class="list-unstyled text-muted small mb-4">
+          {% for feature in plan.features %}
+          <li class="mb-2"><i class="bi bi-check-circle-fill text-success ms-2"></i>{{ feature }}</li>
+          {% endfor %}
+        </ul>
+        <button class="btn btn-primary w-100">{{ plan.button }}</button>
+      </article>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if participation_methods %}
+<section class="container my-5">
+  <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between mb-4 gap-3">
+    <div>
+      <span class="badge-soft mb-3">روش‌های همراهی</span>
+      <h2 class="h2 fw-bold mb-2">چطور می‌توانید کنار ما باشید؟</h2>
+      <p class="text-muted mb-0">
+        از کمک مالی و کالایی تا فعالیت فرهنگی و حضور داوطلبانه، گزینه‌های همراهی را یک‌جا می‌بینید.
+      </p>
+    </div>
+    <a class="btn btn-outline-secondary px-4" href="{% url 'charity:participation_methods' %}">
+      مشاهده همه روش‌ها
+    </a>
+  </div>
+  <div class="participation-grid">
+    {% for method in participation_methods %}
+    <div class="participation-card">
+      {% if method.icon %}
+      <i class="{{ method.icon }}"></i>
+      {% endif %}
+      <h3 class="h5 fw-bold mb-2">{{ method.title }}</h3>
+      <p class="text-muted mb-3">{{ method.description }}</p>
+      {% if method.action_url %}
+      <a href="{{ method.action_url }}" class="btn btn-outline-secondary btn-sm">
+        {{ method.action_text|default:"شروع مشارکت" }}
+      </a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if cultural_initiatives %}
+<section class="container my-5" id="spiritual-engagements">
+  <div class="bg-light rounded-4 p-4 p-lg-5 border">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+      <div>
+        <span class="badge-soft mb-3">پویش‌های فرهنگی و معنوی</span>
+        <h2 class="h2 fw-bold mb-2">با قلب‌تان همراه شوید</h2>
+        <p class="text-muted mb-0">
+          اگر می‌خواهید بدون پرداخت نقدی، سهمی در شادی خانواده‌ها داشته باشید، در پویش‌های معنوی ما شرکت کنید.
+        </p>
+      </div>
+      <a href="{% url 'charity:participation_methods' %}" class="btn btn-outline-secondary px-4">
+        سایر روش‌های همراهی
+      </a>
+    </div>
+    <div class="spiritual-grid">
+      {% for initiative in cultural_initiatives %}
+      <div class="spiritual-card h-100">
+        <i class="bi {{ initiative.icon }}"></i>
+        <h3 class="h5 fw-bold mb-2">{{ initiative.title }}</h3>
+        <p class="text-muted">{{ initiative.description }}</p>
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <span class="badge bg-primary-subtle text-primary rounded-pill">
+            {{ initiative.participation_count|intcomma }} نفر مشارکت کرده‌اند
+          </span>
+          <a href="{{ initiative.cta_url }}" class="btn btn-link fw-semibold stretched-link">
+            {{ initiative.cta_text }}
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if bank_accounts %}
+<section class="container my-5">
+  <div class="text-center mb-5">
+    <span class="badge-soft mb-3">واریز مستقیم</span>
+    <h2 class="h2 fw-bold mb-2">اطلاعات حساب‌های بانکی هیوا</h2>
+    <p class="text-muted mb-0">پس از واریز، لطفاً رسید پرداخت خود را در پیام‌رسان یا پنل کاربری ارسال کنید تا در سوابق شما ثبت شود.</p>
+  </div>
+  <div class="bank-grid">
+    {% for account in bank_accounts %}
+    <div class="bank-card">
+      {% if account.logo %}
+      <img src="{% static account.logo %}" alt="{{ account.bank }}" class="mb-3" style="height:48px;object-fit:contain;">
+      {% endif %}
+      <h3 class="h5 fw-bold mb-2">{{ account.bank }}</h3>
+      <p class="text-muted small mb-1">شماره کارت</p>
+      <p class="bank-card__number">{{ account.card }}</p>
+      <button class="btn btn-sm btn-outline-secondary mt-2 w-100 js-copy" data-copy="{{ account.card|cut:'-' }}">
+        <i class="bi bi-clipboard2-check-fill ms-1"></i>کپی شماره کارت
+      </button>
+      <hr class="my-3">
+      <p class="text-muted small mb-1">شبا</p>
+      <p class="fw-semibold">{{ account.iban }}</p>
+      <button class="btn btn-sm btn-outline-secondary mt-2 w-100 js-copy" data-copy="{{ account.iban }}">
+        <i class="bi bi-clipboard2-check-fill ms-1"></i>کپی شبا
+      </button>
+      <p class="text-muted small mt-3 mb-0">به نام: {{ account.holder }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if giving_channels %}
+<section class="container my-5">
+  <div class="text-center mb-5">
+    <span class="badge-soft mb-3">مسیرهای اثرگذاری</span>
+    <h2 class="h2 fw-bold mb-2">راه‌هایی که می‌توانید به دیگران امید بدهید</h2>
+    <p class="text-muted mb-0">از کمک نقدی و کالایی تا فعالیت داوطلبانه و فرهنگی؛ هر مسیر با توضیح و نحوه اقدام مشخص شده است.</p>
+  </div>
+  <div class="channels-grid">
+    {% for channel in giving_channels %}
+    <div class="channel-card">
+      <i class="bi {{ channel.icon }}"></i>
+      <h3 class="h6 fw-bold mb-2">{{ channel.title }}</h3>
+      <p class="text-muted mb-0">{{ channel.description }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if impact_stats %}
+<section class="container my-5">
+  <div class="text-center mb-5">
+    <span class="badge-soft mb-3">آمارهای الهام‌بخش</span>
+    <h2 class="h2 fw-bold mb-2">اثر ملموس همراهی شما</h2>
+    <p class="text-muted mb-0">شاخص‌های زیر به‌صورت دوره‌ای به‌روزرسانی می‌شوند و نشان می‌دهند کمک‌های شما چگونه زندگی‌ها را روشن کرده است.</p>
+  </div>
+  <div class="impact-grid">
+    {% for stat in impact_stats %}
+    <div class="impact-card text-center">
+      <h3 class="display-6 fw-bold text-primary mb-2">{{ stat.value }}</h3>
+      {% if stat.unit %}<p class="text-muted mb-1">{{ stat.unit }}</p>{% endif %}
+      <p class="fw-semibold mb-2">{{ stat.title }}</p>
+      {% if stat.description %}
+      <p class="text-muted small mb-0">{{ stat.description }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if latest_updates %}
+<section class="container my-5">
+  <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between mb-4 gap-3">
+    <div>
+      <h2 class="h2 fw-bold mb-2">روایت‌های تازه از میدان</h2>
+      <p class="text-muted mb-0">تصاویر، ویدیوها و گزارش‌های هفتگی تیم‌های میدانی هیوا در پروژه‌های سراسر کشور.</p>
+    </div>
+    <a href="{% url 'charity:project_list' %}" class="btn btn-link fw-semibold">
+      همه روایت‌ها
+      <i class="bi bi-arrow-left-short"></i>
+    </a>
+  </div>
+  <div class="row g-4">
+    {% for update in latest_updates %}
+    <div class="col-md-6 col-xl-4">
+      <article class="testimonial-card h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="badge bg-primary-subtle text-primary rounded-pill">{{ update.project.title }}</span>
+          <small class="text-muted">{{ update.published_at|date:"Y/m/d" }}</small>
+        </div>
+        <h3 class="h6 fw-bold mb-2">{{ update.title }}</h3>
+        <p class="text-muted mb-3">
+          {% if update.summary %}
+          {{ update.summary }}
+          {% else %}
+          {{ update.body|truncatewords:30 }}
+          {% endif %}
+        </p>
+        <a href="{% url 'charity:project_detail' update.project.slug %}#project-updates" class="btn btn-outline-secondary btn-sm">
+          مشاهده تصاویر و ادامه گزارش
+        </a>
+      </article>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if success_stories %}
+<section class="container my-5">
+  <div class="text-center mb-5">
+    <span class="badge-soft mb-3">صدای حامیان و خانواده‌ها</span>
+    <h2 class="h2 fw-bold mb-2">تأثیر کمک‌های شما در کلام کسانی که لمسش کرده‌اند</h2>
+  </div>
+  <div class="testimonial-grid">
+    {% for story in success_stories %}
+    <div class="testimonial-card">
+      <div class="testimonial-card__header">
+        {% if story.image %}
+        <img src="{% static story.image %}" alt="{{ story.name }}">
+        {% endif %}
+        <div>
+          <h5 class="fw-bold mb-1">{{ story.name }}</h5>
+          <p class="text-muted small mb-0">{{ story.role }}</p>
+        </div>
+      </div>
+      <p class="text-muted text-justify mb-0">"{{ story.quote }}"</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if completed_projects %}
+<section class="container my-5">
+  <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-between mb-4 gap-3">
+    <div>
+      <h2 class="h2 fw-bold mb-2">پروژه‌های به سرانجام رسیده</h2>
+      <p class="text-muted mb-0">پرونده‌هایی که با لطف شما بسته شد؛ هنوز هم می‌توانید گزارش پایانی و اسناد آن را ببینید.</p>
+    </div>
+    <a href="{% url 'charity:completed_projects' %}" class="btn btn-outline-success px-4">
+      آرشیو کامل موفقیت‌ها
+    </a>
+  </div>
+  <div class="row g-4">
+    {% for project in completed_projects %}
+    <div class="col-md-6 col-xl-3">
+      <article class="channel-card h-100">
+        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2 mb-3">به پایان رسید</span>
+        <h3 class="h6 fw-bold">{{ project.title }}</h3>
+        {% if project.completion_date %}
+        <small class="text-muted d-block mb-2">تاریخ اتمام: {{ project.completion_date|date:"Y/m/d" }}</small>
+        {% endif %}
+        <p class="text-muted small mb-3">
+          {% if project.impact_summary %}
+          {{ project.impact_summary }}
+          {% else %}
+          {{ project.short_description }}
+          {% endif %}
+        </p>
+        <a href="{% url 'charity:project_detail' project.slug %}" class="btn btn-link fw-semibold stretched-link">
+          مشاهده گزارش پایانی
+        </a>
+      </article>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if faq_items %}
+<section class="container my-5">
+  <div class="text-center mb-5">
+    <span class="badge-soft mb-3">پرسش‌های پرتکرار</span>
+    <h2 class="h2 fw-bold mb-2">هر آنچه باید درباره خیریه هیوا بدانید</h2>
+    <p class="text-muted mb-0">اگر پرسش دیگری دارید، تیم پشتیبانی ما با افتخار پاسخ‌گوی شماست.</p>
+  </div>
+  <div class="faq-grid">
+    {% for faq in faq_items %}
+    <div class="faq-card">
+      <p class="faq-card__question">{{ faq.question }}</p>
+      <p class="text-muted mb-0">{{ faq.answer }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="container my-5">
+  <div class="cta-banner text-center">
+    <h2 class="fw-bold mb-3">همین امروز به یک داستان تازه امید ببخشید</h2>
+    <p class="lead mb-4">حمایت شما، هر چقدر هم کوچک، می‌تواند زندگی‌ای را نجات دهد و آینده‌ای را بسازد.</p>
+    <a href="#donation-plans" class="btn-charity-light">همین حالا کمک کنید</a>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const formatNumber = (value, format) => {
+      const formatter = new Intl.NumberFormat('fa-IR');
+      if (format === 'currency') {
+        return formatter.format(Math.floor(value));
+      }
+      return formatter.format(Math.floor(value));
+    };
+
+    const animateNumber = (el) => {
+      const target = parseFloat(el.dataset.target || '0');
+      const format = el.dataset.format || 'number';
+      if (!target) {
+        el.textContent = formatNumber(0, format);
+        return;
+      }
+      const duration = 1800;
+      const start = performance.now();
+
+      const step = (timestamp) => {
+        const progress = Math.min((timestamp - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = target * eased;
+        el.textContent = formatNumber(current, format);
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        }
+      };
+
+      requestAnimationFrame(step);
+    };
+
+    const counters = document.querySelectorAll('.js-animated-number');
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            animateNumber(entry.target);
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.4 });
+      counters.forEach(counter => observer.observe(counter));
+    } else {
+      counters.forEach(counter => animateNumber(counter));
+    }
+
+    document.querySelectorAll('.js-copy').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const original = button.innerHTML;
+        const text = button.dataset.copy;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+          }
+          button.innerHTML = '<i class="bi bi-check-circle-fill ms-1"></i>کپی شد!';
+        } catch (error) {
+          button.innerHTML = '<i class="bi bi-exclamation-triangle-fill ms-1"></i>خطا در کپی';
+        }
+        setTimeout(() => {
+          button.innerHTML = original;
+        }, 2200);
+      });
+    });
+  });
+</script>
+{% endblock %}

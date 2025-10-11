@@ -183,9 +183,16 @@
         {% endif %}
       </div>
 
-      <form action="{% url 'carts:add_to_cart' product.id %}" method="post" class="mb-3">
+      <form action="{% url 'carts:add_to_cart' product.id %}"
+            method="post"
+            class="mb-3 js-add-to-cart-form"
+            data-add-to-cart
+            data-product-id="{{ product.id }}"
+            data-product-name="{{ product.title }}"
+            data-ajax-url="{% url 'carts:ajax_add_to_cart' product.id %}">
         {% csrf_token %}
         <input type="number" name="quantity" value="1" min="1" class="form-control d-inline-block w-auto me-2">
+        <input type="hidden" name="inplace" value="false">
         <button type="submit" class="add-to-cart-btn">
           <i class="bi bi-cart-plus me-2"></i> افزودن به سبد خرید
         </button>
