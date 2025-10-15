@@ -1,33 +1,34 @@
 from decimal import Decimal
 
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 
 class ShippingMethod(models.Model):
-    """Configurable shipping option with a fixed base fee."""
+    """Configurable shipping option that can leverage tiered pricing rules."""
 
-    name = models.CharField(_("نام روش ارسال"), max_length=120, unique=True)
-    description = models.TextField(_("توضیحات"), blank=True)
+    name = models.CharField(_("??? ??? ?????"), max_length=120, unique=True)
+    description = models.TextField(_("???????"), blank=True)
     base_cost = models.DecimalField(
-        _("هزینه پایه"),
+        _("????? ???? ?????"),
         max_digits=10,
         decimal_places=0,
         default=Decimal("0"),
-        help_text=_("مبلغ ثابتی که به مجموع سفارش اضافه می‌شود."),
+        help_text=_("???????? ?? ?? ???? ????? ????? ??? ?? ??? ???? ????? ??????."),
     )
-    is_active = models.BooleanField(_("فعال؟"), default=True)
+    is_active = models.BooleanField(_("????"), default=True)
     is_default = models.BooleanField(
-        _("روش پیش‌فرض؟"),
+        _("??? ???????"),
         default=False,
-        help_text=_("در صورت انتخاب، به صورت خودکار برای سبدهای جدید لحاظ می‌شود."),
+        help_text=_("?? ???? ???? ????? ??? ??? ?? ???? ??????? ???? ??????? ?????? ??????."),
     )
     minimum_order_total = models.DecimalField(
-        _("حداقل مبلغ سفارش"),
+        _("????? ???? ?????"),
         max_digits=12,
         decimal_places=0,
         default=Decimal("0"),
-        help_text=_("در صورت تعیین، فقط برای سفارش‌هایی با مجموع برابر یا بیشتر از این مقدار اعمال می‌شود."),
+        help_text=_("??? ???? ????? ???? ?? ??? ????? ????? ??? ??? ????? ??????? ????? ??."),
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -35,8 +36,8 @@ class ShippingMethod(models.Model):
 
     class Meta:
         ordering = ["-is_default", "base_cost", "name"]
-        verbose_name = _("روش ارسال")
-        verbose_name_plural = _("روش‌های ارسال")
+        verbose_name = _("??? ?????")
+        verbose_name_plural = _("??????? ?????")
 
     def __str__(self) -> str:  # pragma: no cover - trivial
         return self.name
@@ -46,3 +47,80 @@ class ShippingMethod(models.Model):
         super().clean()
         if self.is_default:
             ShippingMethod.objects.filter(is_default=True).exclude(pk=self.pk).update(is_default=False)
+
+    def calculate_cost(self, subtotal: Decimal, items_count: int = 0) -> Decimal:
+        """Return the applicable cost for the provided subtotal."""
+        subtotal = Decimal(subtotal or 0)
+
+        rule = (
+            self.cost_rules.filter(
+                is_active=True,
+                min_total__lte=subtotal,
+            )
+            .filter(Q(max_total__gte=subtotal) | Q(max_total__isnull=True))
+            .order_by("priority", "min_total")
+            .first()
+        )
+
+        if rule:
+            return rule.calculate_cost(subtotal, items_count)
+        return self.base_cost
+
+
+class ShippingCostRule(models.Model):
+    """Tiered pricing rule for a shipping method based on order totals."""
+
+    shipping_method = models.ForeignKey(
+        ShippingMethod,
+        on_delete=models.CASCADE,
+        related_name="cost_rules",
+        verbose_name=_("??? ?????"),
+    )
+    name = models.CharField(_("??? ?????"), max_length=120)
+    description = models.TextField(_("???????"), blank=True)
+    min_total = models.DecimalField(
+        _("????? ????"),
+        max_digits=12,
+        decimal_places=0,
+        default=Decimal("0"),
+    )
+    max_total = models.DecimalField(
+        _("?????? ????"),
+        max_digits=12,
+        decimal_places=0,
+        null=True,
+        blank=True,
+        help_text=_("?? ???? ???? ????? ??? ????? ???? ??? ????? ?????? ????? ??????."),
+    )
+    cost = models.DecimalField(
+        _("????? ????"),
+        max_digits=10,
+        decimal_places=0,
+        default=Decimal("0"),
+    )
+    per_item_surcharge = models.DecimalField(
+        _("????? ?? ????"),
+        max_digits=10,
+        decimal_places=0,
+        default=Decimal("0"),
+        help_text=_("?? ???? ???? ??????? ?? ???? ?? ???? ????? ????? ???."),
+    )
+    priority = models.PositiveIntegerField(_("??????"), default=1)
+    is_active = models.BooleanField(_("????"), default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["priority", "min_total"]
+        verbose_name = _("????? ????? ?????")
+        verbose_name_plural = _("?????? ????? ?????")
+
+    def __str__(self) -> str:  # pragma: no cover - trivial
+        return f"{self.name} - {self.shipping_method.name}"
+
+    def calculate_cost(self, subtotal: Decimal, items_count: int = 0) -> Decimal:
+        subtotal = Decimal(subtotal or 0)
+        total = Decimal(self.cost)
+        if items_count and self.per_item_surcharge:
+            total += Decimal(self.per_item_surcharge) * Decimal(items_count)
+        return total

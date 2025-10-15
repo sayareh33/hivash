@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class Visit(models.Model):
-    timestamp = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     path = models.CharField(max_length=500)
     method = models.CharField(max_length=10)
     referer = models.CharField(max_length=500, null=True, blank=True)
@@ -20,15 +20,15 @@ class Visit(models.Model):
 
 
     class Meta:
-        ordering = ['-timestamp']
+        ordering = ['-created_at']
         indexes = [
-            models.Index(fields=['timestamp']),
+            models.Index(fields=['created_at']),
             models.Index(fields=['ip_hash']),
             models.Index(fields=['user']),
         ]
 
     def __str__(self):
-        return f"{self.path} at {self.timestamp}"
+        return f"{self.path} at {self.created_at}"
 
     @property
     def ip_address(self):

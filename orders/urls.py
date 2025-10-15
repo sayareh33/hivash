@@ -6,5 +6,4 @@ app_name = 'orders'
 
 urlpatterns = [
     path('create/', order_create_view, name='order_create'),
-
 ]

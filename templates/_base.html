@@ -21,6 +21,23 @@
   <link href="{% static 'css/base.css' %}" rel="stylesheet">
   <link href="{% static 'css/main.css' %}" rel="stylesheet">
   <style>
+          /* استایل سفارشی برای شاخص سبد خرید */
+    .navbar-cart-badge {
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        background-color: #ff4757;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: bold;
+        z-index: 1001;
+    }
     .cart-toast {
       position: fixed;
       top: 1.5rem;
@@ -37,14 +54,80 @@
     .cart-toast--error {
       background: linear-gradient(135deg, #ef4444, #b91c1c);
     }
+   
+    /* اعمال فونت روی ناوبار و المان‌های مختلف */
+.navbar,
+.navbar-brand,
+.nav-link,
+.dropdown-menu,
+.form-control,
+.btn {
+    font-family: 'Vazir', 'Tanha', 'Segoe UI', Tahoma, sans-serif;
+}
+
+/* به طور کلی برای تمام سایت */
+body {
+    font-family: 'Vazir', sans-serif;
+    direction: rtl;
+    text-align: right;
+}
+  
+  /* افکت hover برای لینک‌های منو */
+        .nav-link {
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 8px 12px !important;
+            border-radius: 5px;
+        }
+        
+        .nav-link:hover {
+            transform: translateY(-2px);
+        }
+        
+        .dropdown-menu {
+            background-color: #fff;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dropdown-item {
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            transform: translateX(-5px);
+        }
+        
+        .main-menu {
+            margin-left: auto;
+        }
+        
+        @media (max-width: 991px) {
+            .main-menu {
+                margin-left: 0;
+                margin-top: 15px;
+            }
+            
+            .header-actions {
+                margin-top: 15px;
+            }
+        }
   </style>
-  {% block extra_css %}{% endblock %}
+  {% block extra_css %}
+      
+  {% endblock %}
 </head>
 
 <body>
   {% include 'partials/navbar.html' %}
+
+  
+  
   <main class="site-main">
-    {% block content %}{% endblock %}
+    {% block content %}
+
+
+    {% endblock %}
   </main>
   <div id="cart-toast" class="cart-toast" role="status" aria-live="polite"></div>
   {% include 'partials/footer.html' %}
@@ -157,6 +240,12 @@
       });
     })();
   </script>
-  {% block extra_js %}{% endblock %}
+  {% block extra_js %}
+      <script>
+window.USER_IS_AUTHENTICATED = {{ request.user.is_authenticated|yesno:"true,false" }};
+window.LOGIN_URL = "{% url 'accounts:login' %}";
+</script>
+      
+  {% endblock %}
 </body>
 </html>

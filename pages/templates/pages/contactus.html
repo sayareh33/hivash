@@ -192,7 +192,37 @@
             margin-bottom: 15px;
         }
     }
+
+
+    /* استایل‌های اختصاصی صفحه تماس */
+    .contact-form .form-control {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 12px 15px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+    }
+
+    /* بازنشانی استایل نوبار */
+    .navbar .search-form .form-control {
+        margin-bottom: 0;
+        padding: 8px 15px;
+        border-radius: 50rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .navbar .search-input {
+        margin-bottom: 0;
+    }
+
+    :root {
+    --primary-color: #00ff7f; /* سبز-زرد گرادینتی که خودت گفتی */
+    --primary-dark: #008f4f;
+    --light-bg: #f8f9fa;
+    --text-color: #333;
+}
 </style>
+
 {% endblock %}
 
 {% block content %}
@@ -221,7 +251,7 @@
                         </div>
                         <div class="contact-text">
                             <h3>آدرس</h3>
-                            <p>استان فارس، شهرستان قیر و کارزین، قیر، کوچه سه شهید</p>
+                            <p>شهری پر از آسمانی های زمین</p>
                         </div>
                     </div>
 
@@ -231,8 +261,8 @@
                         </div>
                         <div class="contact-text">
                             <h3>تلفن</h3>
-                            <p><a href="tel:+989384501026">09384501026</a></p>
-                            <p><a href="tel:+987134567890">07134567890</a></p>
+                            <p><a href="tel:+989384501026">09332147263</a></p>
+                            <p><a href="tel:+987134567890">01732222222</a></p>
                         </div>
                     </div>
 
@@ -286,20 +316,26 @@
             <div class="col-lg-7">
                 <div class="contact-form">
                     <h2 class="mb-4">پیام به ما</h2>
-                    <form method="post" action="{% url 'pages:contactus' %}">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6">
-                                <input type="text" class="form-control" name="name" placeholder="نام شما *" required>
-                            </div>
-                            <div class="col-md-6">
-                                <input type="email" class="form-control" name="email" placeholder="ایمیل شما *" required>
-                            </div>
-                        </div>
-                        <input type="text" class="form-control" name="subject" placeholder="موضوع *" required>
-                        <textarea class="form-control" name="message" rows="6" placeholder="متن پیام شما *" required></textarea>
-                        <button type="submit" class="submit-btn">ارسال پیام</button>
-                    </form>
+                   <form method="post" action="{% url 'pages:contactus' %}">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div class="row">
+        <div class="col-md-6">
+            {{ form.name }}
+            {{ form.name.errors }}
+        </div>
+        <div class="col-md-6">
+            {{ form.email }}
+            {{ form.email.errors }}
+        </div>
+    </div>
+    {{ form.subject }}
+    {{ form.subject.errors }}
+    {{ form.message }}
+    {{ form.message.errors }}
+    <button type="submit" class="btn-contact">ارسال پیام</button>
+</form>
+
                 </div>
             </div>
         </div>

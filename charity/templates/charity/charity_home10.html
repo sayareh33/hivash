@@ -1,0 +1,899 @@
+{% extends '_base.html' %}
+{% load static humanize %}
+
+{% block title %}خیریه هیوا | همکاری در ساخت آینده‌ای روشن{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    /* پالت رنگ حرفه‌ای و هماهنگ - ترکیب گرم و تاثیرگذار */
+    --primary-sun: #F59E0B;
+    --deep-amber: #D97706;
+    --vibrant-orange: #EA580C;
+    --soft-cream: #FFFBEB;
+    --warm-apricot: #FDE68A;
+    --success-emerald: #10B981;
+    --deep-emerald: #059669;
+    --soft-mint: #D1FAE5;
+    --charcoal: #1F2937;
+    --light-charcoal: #6B7280;
+    --soft-gray: #F9FAFB;
+    --white: #FFFFFF;
+    --accent-coral: #FB7185;
+    --teal-blue: #0D9488;
+    --soft-teal: #CCFBF1;
+  }
+
+  /* هیرو سکشن بهبود یافته */
+  .charity-hero {
+    background:
+      linear-gradient(135deg, rgba(245, 158, 11, 0.85) 0%, rgba(234, 88, 12, 0.80) 100%),
+      url("{% static 'img/charity/hero-bg.jpg' %}") center/cover no-repeat;
+    color: var(--white);
+    padding: 5rem 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 0 40px 40px;
+    margin-bottom: 3rem;
+  }
+
+  .charity-hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-badge {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: var(--white);
+    padding: 0.7rem 1.8rem;
+    border-radius: 50px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+  }
+
+  .hero-title {
+    font-size: 3.2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.3rem;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    opacity: 0.95;
+    max-width: 600px;
+  }
+
+  /* CTA های اصلی - کوچکتر و شیک‌تر */
+  .hero-cta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 3rem;
+  }
+
+  .cta-primary {
+    background: linear-gradient(135deg, var(--success-emerald), var(--deep-emerald));
+    color: var(--white);
+    border: none;
+    padding: 1rem 1.8rem;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    text-decoration: none;
+  }
+
+  .cta-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);
+    color: var(--white);
+  }
+
+  .cta-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    color: var(--white);
+    padding: 1rem 1.8rem;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    text-decoration: none;
+  }
+
+  .cta-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    color: var(--white);
+  }
+
+  /* باکس‌های رنگی زیر هیرو */
+  .feature-boxes {
+    margin: -2rem auto 4rem;
+    position: relative;
+    z-index: 10;
+  }
+
+  .feature-box {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .feature-box::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-sun), var(--vibrant-orange));
+  }
+
+  .feature-box:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .feature-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 1.8rem;
+    transition: all 0.3s ease;
+  }
+
+  .feature-box:hover .feature-icon {
+    transform: scale(1.1);
+  }
+
+  .feature-box-1 .feature-icon {
+    background: linear-gradient(135deg, var(--soft-mint), var(--success-emerald));
+    color: var(--deep-emerald);
+  }
+
+  .feature-box-2 .feature-icon {
+    background: linear-gradient(135deg, var(--warm-apricot), var(--primary-sun));
+    color: var(--deep-amber);
+  }
+
+  .feature-box-3 .feature-icon {
+    background: linear-gradient(135deg, #FECACA, var(--accent-coral));
+    color: #DC2626;
+  }
+
+  .feature-box-4 .feature-icon {
+    background: linear-gradient(135deg, var(--soft-teal), var(--teal-blue));
+    color: var(--teal-blue);
+  }
+
+  .feature-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--charcoal);
+  }
+
+  .feature-description {
+    color: var(--light-charcoal);
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+
+  /* پویش‌های فرهنگی و معنوی با تم سبز-آبی */
+  .spiritual-campaigns {
+    background: linear-gradient(135deg, var(--soft-teal), var(--white));
+    padding: 4rem 0;
+    border-radius: 30px;
+    margin: 3rem 0;
+  }
+
+  .campaign-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  .campaign-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(13, 148, 136, 0.1);
+    transition: all 0.4s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .campaign-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--teal-blue), var(--success-emerald));
+  }
+
+  .campaign-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(13, 148, 136, 0.15);
+  }
+
+  .campaign-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    background: linear-gradient(135deg, var(--teal-blue), var(--success-emerald));
+    color: var(--white);
+  }
+
+  .campaign-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--charcoal);
+  }
+
+  .campaign-description {
+    color: var(--light-charcoal);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+
+  /* بخش راه‌های امیدبخشی با رنگ‌های گرم */
+  .hope-channels {
+    background: linear-gradient(135deg, var(--soft-cream), var(--white));
+    padding: 4rem 0;
+    border-radius: 30px;
+    margin: 3rem 0;
+  }
+
+  .channels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  .channel-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(245, 158, 11, 0.1);
+    transition: all 0.4s ease;
+    border: 1px solid rgba(245, 158, 11, 0.1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .channel-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-sun), var(--vibrant-orange));
+  }
+
+  .channel-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(245, 158, 11, 0.15);
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .channel-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, var(--primary-sun), var(--vibrant-orange));
+    color: var(--white);
+  }
+
+  .channel-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--charcoal);
+  }
+
+  .channel-description {
+    color: var(--light-charcoal);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  /* روش خلاقانه برای نمایش حساب‌های بانکی */
+  .bank-accounts-section {
+    background: linear-gradient(135deg, var(--charcoal), #374151);
+    color: var(--white);
+    padding: 4rem 0;
+    border-radius: 30px;
+    margin: 3rem 0;
+  }
+
+  .bank-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  .bank-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bank-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-5px);
+  }
+
+  .bank-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .bank-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+
+  .bank-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  .account-info {
+    margin-bottom: 2rem;
+  }
+
+  .account-type {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 0.5rem;
+  }
+
+  .account-number {
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    direction: ltr;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .copy-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--white);
+    padding: 0.7rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+
+  .copy-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+
+  /* بخش‌های دیگر با حفظ استایل اصلی */
+  .urgent-projects {
+    background: linear-gradient(135deg, var(--soft-cream), var(--white));
+    padding: 4rem 0;
+    position: relative;
+  }
+
+  .urgent-badge {
+    background: linear-gradient(135deg, var(--vibrant-orange), var(--accent-coral));
+    color: var(--white);
+    padding: 0.6rem 1.5rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-header {
+    margin-bottom: 3rem;
+  }
+
+  .section-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--charcoal);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  .section-subtitle {
+    color: var(--light-charcoal);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    max-width: 600px;
+  }
+
+  /* کارت پروژه */
+  .project-card {
+    background: var(--white);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+  }
+
+  .project-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+  }
+
+  .project-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-sun), var(--vibrant-orange));
+    z-index: 2;
+  }
+
+  /* رسپانسیو */
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2.5rem;
+    }
+
+    .section-title {
+      font-size: 2rem;
+    }
+
+    .hero-cta-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .feature-boxes {
+      margin: -1rem auto 3rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- هیرو سکشن -->
+<section class="charity-hero">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fas fa-star"></i>
+        دارای گواهی شفافیت مالی • ثبت شده در وزارت کشور
+      </div>
+
+      <h1 class="hero-title">
+        هر کمک شما،
+        <span style="display: block; color: var(--warm-apricot);">یک زندگی را متحول می‌کند</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        در خیریه هیوا، ما به شما این اطمینان را می‌دهیم که کمک‌هایتان مستقیماً به دست نیازمندان واقعی می‌رسد.
+        با گزارش‌گیری لحظه‌ای و شفافیت کامل.
+      </p>
+
+      <!-- CTA های اصلی - کوچکتر شده -->
+      <div class="hero-cta-grid">
+        <a href="{% url 'charity:project_list' %}" class="cta-primary">
+          <i class="fas fa-bolt"></i>
+          کمک فوری
+        </a>
+        <a href="{% url 'charity:success' %}" class="cta-secondary">
+          <i class="fas fa-heart"></i>
+          انتخاب مبلغ
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- باکس‌های رنگی زیر هیرو -->
+<section class="feature-boxes">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-3 col-md-6">
+        <a href="{% url 'charity:project_list' %}?category=health" class="feature-box feature-box-1">
+          <div class="feature-icon">
+            <i class="fas fa-heartbeat"></i>
+          </div>
+          <h3 class="feature-title">پروژه‌های درمانی</h3>
+          <p class="feature-description">کمک به درمان بیماران نیازمند و انجام عمل‌های جراحی ضروری</p>
+        </a>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <a href="{% url 'charity:project_list' %}?category=education" class="feature-box feature-box-2">
+          <div class="feature-icon">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          <h3 class="feature-title">حمایت تحصیلی</h3>
+          <p class="feature-description">فرصت تحصیل برای کودکان محروم و استعدادهای درخشان</p>
+        </a>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <a href="{% url 'charity:project_list' %}?category=housing" class="feature-box feature-box-3">
+          <div class="feature-icon">
+            <i class="fas fa-home"></i>
+          </div>
+          <h3 class="feature-title">احداث مسکن</h3>
+          <p class="feature-description">ساخت خانه برای خانواده‌های بی‌سرپناه و آسیب‌دیده</p>
+        </a>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <a href="{% url 'charity:project_list' %}?category=education" class="feature-box feature-box-4">
+          <div class="feature-icon">
+            <i class="fas fa-hands-helping"></i>
+          </div>
+          <h3 class="feature-title">مشارکت معنوی</h3>
+          <p class="feature-description">وقف، نذر و دیگر روش‌های همراهی معنوی</p>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- پروژه‌های فوری -->
+<section id="urgent-projects" class="urgent-projects">
+  <div class="container">
+    <div class="section-header">
+      <span class="urgent-badge">
+        <i class="fas fa-clock"></i>
+        نیازمند کمک فوری
+      </span>
+      <h2 class="section-title">پروژه‌هایی که منتظر کمک شما هستند</h2>
+      <p class="section-subtitle">این پروژه‌ها در مراحل حساسی قرار دارند و کمک شما می‌تواند تفاوت بزرگی ایجاد کند</p>
+    </div>
+
+    <div class="row g-4">
+      <!-- پروژه ۱ -->
+      <div class="col-lg-4 col-md-6">
+        <div class="project-card">
+          <div class="project-image">
+            <img src="{% static 'img/charity/urgent-1.jpg' %}" alt="جراحی فوری کودک" class="w-100 h-100">
+            <div class="project-overlay">
+              <div class="project-meta">
+                <span class="project-badge">درمانی</span>
+                <span class="project-urgency">
+                  <i class="fas fa-bolt"></i>
+                  ۳ روز مانده
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="project-content">
+            <h3 class="project-title">جراحی فوری قلب کودک ۶ ساله</h3>
+            <p class="project-description">
+              علی نیازمند عمل جراحی قلب است. خانواده او قادر به پرداخت هزینه‌های درمان نیستند...
+            </p>
+
+            <div class="progress-container">
+              <div class="progress-info">
+                <span class="progress-percent">۴۵٪</span>
+                <span class="progress-amount">۹۰ میلیون از ۲۰۰ میلیون تومان</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 45%"></div>
+              </div>
+            </div>
+
+            <a href="{% url 'charity:project_detail' 'heart-surgery' %}" class="cta-primary w-100">
+              <i class="fas fa-donate"></i>
+              کمک به این پروژه
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- پروژه ۲ و ۳ به همین صورت -->
+    </div>
+  </div>
+</section>
+
+<!-- پویش‌های فرهنگی و معنوی -->
+<section class="spiritual-campaigns">
+  <div class="container">
+    <div class="section-header text-center">
+      <span class="badge-soft mb-3">پویش‌های فرهنگی و معنوی</span>
+      <h2 class="section-title">با قلب‌تان همراه شوید</h2>
+      <p class="section-subtitle">اگر می‌خواهید بدون پرداخت نقدی، سهمی در شادی خانواده‌ها داشته باشید</p>
+    </div>
+
+    <div class="campaign-grid">
+      <div class="campaign-card">
+        <div class="campaign-icon">
+          <i class="fas fa-book-quran"></i>
+        </div>
+        <h3 class="campaign-title">وقف قرآن</h3>
+        <p class="campaign-description">
+          وقف قرآن کریم برای استفاده نمازگزاران و طلاب علوم دینی در مساجد و مراکز دینی
+        </p>
+        <a href="{% url 'charity:participation_methods' %}" class="cta-primary">
+          مشارکت در وقف
+        </a>
+      </div>
+
+      <div class="campaign-card">
+        <div class="campaign-icon">
+          <i class="fas fa-mosque"></i>
+        </div>
+        <h3 class="campaign-title">احداث مسجد</h3>
+        <p class="campaign-description">
+          ساخت و تجهیز مساجد در مناطق محروم و کم‌برخوردار برای تقویت بنیان‌های دینی
+        </p>
+        <a href="{% url 'charity:participation_methods' %}" class="cta-primary">
+          همکاری در احداث
+        </a>
+      </div>
+
+      <div class="campaign-card">
+        <div class="campaign-icon">
+          <i class="fas fa-praying-hands"></i>
+        </div>
+        <h3 class="campaign-title">نذر و قربانی</h3>
+        <p class="campaign-description">
+          اجرای نذورات و قربانی‌های شرعی برای نیازمندان در مناسبت‌های مذهبی
+        </p>
+        <a href="{% url 'charity:participation_methods' %}" class="cta-primary">
+          انجام نذر
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- راه‌های امیدبخشی -->
+<section class="hope-channels">
+  <div class="container">
+    <div class="section-header text-center">
+      <span class="badge-soft mb-3">مسیرهای اثرگذاری</span>
+      <h2 class="section-title">راه‌هایی که می‌توانید به دیگران امید بدهید</h2>
+      <p class="section-subtitle">از کمک نقدی و کالایی تا فعالیت داوطلبانه و فرهنگی</p>
+    </div>
+
+    <div class="channels-grid">
+      <div class="channel-card">
+        <div class="channel-icon">
+          <i class="fas fa-donate"></i>
+        </div>
+        <h3 class="channel-title">کمک مالی</h3>
+        <p class="channel-description">
+          کمک نقدی مستقیم به پروژه‌های مختلف با امکان رصد کامل وجوه
+        </p>
+        <a href="{% url 'charity:success' %}" class="cta-secondary">
+          کمک مالی
+        </a>
+      </div>
+
+      <div class="channel-card">
+        <div class="channel-icon">
+          <i class="fas fa-gift"></i>
+        </div>
+        <h3 class="channel-title">کمک غیرنقدی</h3>
+        <p class="channel-description">
+          اهدای کالا، پوشاک، مواد غذایی و دیگر اقلام مورد نیاز
+        </p>
+        <a href="{% url 'charity:success' %}" class="cta-secondary">
+          اهدای کالا
+        </a>
+      </div>
+
+      <div class="channel-card">
+        <div class="channel-icon">
+          <i class="fas fa-hands-helping"></i>
+        </div>
+        <h3 class="channel-title">داوطلبی</h3>
+        <p class="channel-description">
+          مشارکت در فعالیت‌های میدانی و اجرایی پروژه‌های خیریه
+        </p>
+        <a href="{% url 'charity:success' %}" class="cta-secondary">
+          ثبت نام داوطلبی
+        </a>
+      </div>
+
+      <div class="channel-card">
+        <div class="channel-icon">
+          <i class="fas fa-share-alt"></i>
+        </div>
+        <h3 class="channel-title">تبلیغ و معرفی</h3>
+        <p class="channel-description">
+          معرفی خیریه به دیگران و کمک در گسترش فرهنگ نیکوکاری
+        </p>
+        <a href="{% url 'charity:success' %}" class="cta-secondary">
+          معرفی به دیگران
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- روش خلاقانه نمایش حساب‌های بانکی -->
+<section class="bank-accounts-section">
+  <div class="container">
+    <div class="section-header text-center text-white">
+      <h2 class="section-title">راه‌های واریز کمک‌ها</h2>
+      <p class="section-subtitle">پس از واریز، لطفاً رسید پرداخت را برای ما ارسال کنید</p>
+    </div>
+
+    <div class="bank-cards">
+      <div class="bank-card">
+        <div class="bank-header">
+          <div class="bank-logo">
+            <i class="fas fa-university"></i>
+          </div>
+          <div class="bank-name">بانک ملی</div>
+        </div>
+        <div class="account-info">
+          <div class="account-type">شماره کارت</div>
+          <div class="account-number">6037 9910 1234 5678</div>
+          <button class="copy-btn" data-text="6037991012345678">
+            <i class="fas fa-copy"></i> کپی شماره کارت
+          </button>
+        </div>
+        <div class="account-info">
+          <div class="account-type">شماره شبا</div>
+          <div class="account-number">IR55 0170 0000 0012 3456 7890 11</div>
+          <button class="copy-btn" data-text="IR550170000000123456789011">
+            <i class="fas fa-copy"></i> کپی شماره شبا
+          </button>
+        </div>
+      </div>
+
+      <div class="bank-card">
+        <div class="bank-header">
+          <div class="bank-logo">
+            <i class="fas fa-credit-card"></i>
+          </div>
+          <div class="bank-name">بانک ملت</div>
+        </div>
+        <div class="account-info">
+          <div class="account-type">شماره کارت</div>
+          <div class="account-number">6104 3378 9012 3456</div>
+          <button class="copy-btn" data-text="6104337890123456">
+            <i class="fas fa-copy"></i> کپی شماره کارت
+          </button>
+        </div>
+        <div class="account-info">
+          <div class="account-type">شماره شبا</div>
+          <div class="account-number">IR12 0120 0000 0012 3456 7890 12</div>
+          <button class="copy-btn" data-text="IR120120000000123456789012">
+            <i class="fas fa-copy"></i> کپی شماره شبا
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- بقیه بخش‌ها -->
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // قابلیت کپی کردن شماره حساب‌ها
+    document.querySelectorAll('.copy-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const text = this.getAttribute('data-text');
+        navigator.clipboard.writeText(text).then(() => {
+          const originalText = this.innerHTML;
+          this.innerHTML = '<i class="fas fa-check"></i> کپی شد!';
+          setTimeout(() => {
+            this.innerHTML = originalText;
+          }, 2000);
+        });
+      });
+    });
+
+    // انیمیشن کارت‌ها
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.project-card, .campaign-card, .channel-card, .feature-box').forEach(card => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(30px)';
+      card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      observer.observe(card);
+    });
+  });
+</script>
+{% endblock %}

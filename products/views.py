@@ -3,13 +3,35 @@ from django.db.models import Prefetch, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views import View, generic
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_http_methods
 from django.views.generic import ListView, DetailView
 from django.http import JsonResponse, Http404
 from django.contrib import messages
 from django.utils.translation import gettext as _
 from django.core.paginator import Paginator
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.urls import reverse
 from .models import Product, Comment, Wishlist, WishlistItem, Category
 from .forms import CommentForm, AddToWishlistForm, RemoveFromWishlistForm, ProductSearchForm
+
+
+def _get_safe_redirect(request, fallback):
+    """
+    Return a safe URL to redirect the user back to after wishlist actions.
+    Prefer explicit 'next' parameter, then Referer header, otherwise fallback.
+    """
+    next_url = request.POST.get('next') or request.GET.get('next')
+    allowed_hosts = {request.get_host()}
+
+    if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts=allowed_hosts):
+        return next_url
+
+    referer = request.META.get('HTTP_REFERER')
+    if referer and url_has_allowed_host_and_scheme(referer, allowed_hosts=allowed_hosts):
+        return referer
+
+    return fallback
 # from articles.models import Article
 
 
@@ -101,6 +123,15 @@ class ProductListView(ListView):
         context['selected_category_slug'] = (
             selected_category.slug if selected_category else ''
         )
+
+        if self.request.user.is_authenticated:
+            wishlist_ids = WishlistItem.objects.filter(
+                wishlist__user=self.request.user
+            ).values_list('product_id', flat=True)
+            context['wishlist_product_ids'] = list(wishlist_ids)
+        else:
+            context['wishlist_product_ids'] = []
+
         return context
 
 class CategoryProductListView(ProductListView):
@@ -147,11 +178,6 @@ class ProductSearchView(ProductListView):
         context['query'] = self.request.GET.get('q', '')
         return context
 
-
-class ProductDetailView(DetailView):
-    model = Product
-    template_name = 'products/product_detail.html'
-    context_object_name = 'product'
 
 # ============================
 # 🔹 Product Detail View
@@ -256,6 +282,14 @@ class ProductDetailView(generic.DetailView):
             id__in=recent_ids,
             is_active=True
         )[:8]
+
+        if self.request.user.is_authenticated:
+            context['is_in_wishlist'] = WishlistItem.objects.filter(
+                wishlist__user=self.request.user,
+                product=product
+            ).exists()
+        else:
+            context['is_in_wishlist'] = False
 
         return context
 
@@ -454,56 +488,210 @@ class UnifiedSearchView(View):
 @login_required
 def wishlist_view(request):
     wishlist, _ = Wishlist.objects.get_or_create(user=request.user)
-    wishlist_items = WishlistItem.objects.filter(wishlist=wishlist).select_related('product')
+    wishlist_items_qs = (
+        WishlistItem.objects.filter(wishlist=wishlist)
+        .select_related('product')
+        .order_by('-added_at')
+    )
+
+    paginator = Paginator(wishlist_items_qs, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
         'wishlist': wishlist,
-        'wishlist_items': wishlist_items,
+        'wishlist_items': page_obj.object_list,
+        'page_obj': page_obj,
+        'is_paginated': page_obj.has_other_pages(),
+        'paginator': paginator,
+        'total_items': paginator.count,
     }
     return render(request, 'products/wishlist.html', context)
 
 
-@login_required
-def add_to_wishlist(request):
-    if request.method == 'POST':
-        form = AddToWishlistForm(request.POST)
-        if form.is_valid():
-            product_id = form.cleaned_data['product_id']
-            product = get_object_or_404(Product, id=product_id)
-            wishlist, _ = Wishlist.objects.get_or_create(user=request.user)
+@ensure_csrf_cookie
+@require_http_methods(["POST"])
+def add_to_wishlist_ajax(request):
+    """ویو AJAX برای افزودن - نسخه اصلاح شده"""
+    # بررسی لاگین بودن کاربر
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'لطفاً ابتدا وارد حساب کاربری خود شوید',
+            'login_required': True
+        }, status=401)
 
-            exists = WishlistItem.objects.filter(wishlist=wishlist, product=product).exists()
-            if not exists:
-                WishlistItem.objects.create(wishlist=wishlist, product=product)
-                messages.success(request, _('محصول به لیست علاقه‌مندی‌ها اضافه شد.'))
-            else:
-                messages.info(request, _('این محصول قبلاً در لیست علاقه‌مندی‌های شما وجود دارد.'))
+    product_id = request.POST.get('product_id')
+    if not product_id:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'شناسه محصول الزامی است'
+        }, status=400)
 
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'status': 'success'})
-            return redirect(product.get_absolute_url())
+    try:
+        product = Product.objects.get(id=product_id, is_active=True, status='published')
+    except Product.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'محصول یافت نشد'
+        }, status=404)
 
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({'status': 'error'})
-    return redirect('home')
+    try:
+        wishlist, _ = Wishlist.objects.get_or_create(user=request.user)
+        wishlist_item, created = WishlistItem.objects.get_or_create(
+            wishlist=wishlist,
+            product=product
+        )
+
+        if created:
+            return JsonResponse({
+                'status': 'success',
+                'action': 'added',
+                'message': 'محصول به علاقه‌مندی‌ها اضافه شد',
+                'in_wishlist': True,
+                'wishlist_count': wishlist.wishlistitem_set.count()
+            })
+        else:
+            return JsonResponse({
+                'status': 'info',
+                'action': 'already_exists',
+                'message': 'این محصول قبلاً در علاقه‌مندی‌ها بود',
+                'in_wishlist': True,
+                'wishlist_count': wishlist.wishlistitem_set.count()
+            })
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'خطای سرور: {str(e)}'
+        }, status=500)
 
 
-@login_required
-def remove_from_wishlist(request):
-    if request.method == 'POST':
-        form = RemoveFromWishlistForm(request.POST)
-        if form.is_valid():
-            product_id = form.cleaned_data['product_id']
-            product = get_object_or_404(Product, id=product_id)
-            wishlist = get_object_or_404(Wishlist, user=request.user)
+@ensure_csrf_cookie
+@require_http_methods(["POST"])
+def remove_from_wishlist_ajax(request):
+    """ویو AJAX برای حذف - نسخه اصلاح شده"""
+    # بررسی لاگین بودن کاربر
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'لطفاً ابتدا وارد حساب کاربری خود شوید',
+            'login_required': True
+        }, status=401)
 
-            WishlistItem.objects.filter(wishlist=wishlist, product=product).delete()
-            messages.success(request, _('محصول از لیست علاقه‌مندی‌ها حذف شد.'))
+    product_id = request.POST.get('product_id')
+    if not product_id:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'شناسه محصول الزامی است'
+        }, status=400)
 
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'status': 'success'})
-            return redirect('products:wishlist')
+    try:
+        wishlist = Wishlist.objects.get(user=request.user)
+        deleted_count = WishlistItem.objects.filter(
+            wishlist=wishlist,
+            product_id=product_id
+        ).delete()[0]
 
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({'status': 'error'})
-    return redirect('products:wishlist')
+        if deleted_count > 0:
+            return JsonResponse({
+                'status': 'success',
+                'action': 'removed',
+                'message': 'محصول از علاقه‌مندی‌ها حذف شد',
+                'in_wishlist': False,
+                'wishlist_count': wishlist.wishlistitem_set.count()
+            })
+        else:
+            return JsonResponse({
+                'status': 'info',
+                'action': 'not_found',
+                'message': 'محصول در علاقه‌مندی‌ها یافت نشد',
+                'in_wishlist': False,
+                'wishlist_count': wishlist.wishlistitem_set.count()
+            })
+
+    except Wishlist.DoesNotExist:
+        return JsonResponse({
+            'status': 'info',
+            'action': 'not_found',
+            'message': 'لیست علاقه‌مندی‌ها یافت نشد',
+            'in_wishlist': False,
+            'wishlist_count': 0
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'خطای سرور: {str(e)}'
+        }, status=500)
+
+
+# @require_http_methods(["POST"])
+# @login_required
+# def add_to_wishlist(request):
+#     # اگر کاربر لاگین نباشد، به صفحه لاگین هدایت می‌شود
+#     if not request.user.is_authenticated:
+#         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+#             return JsonResponse({
+#                 'status': 'error',
+#                 'message': 'لطفاً ابتدا وارد شوید',
+#                 'login_required': True,
+#                 'login_url': '/accounts/login/'
+#             }, status=401)
+#         return redirect('accounts:login')
+#
+#     if request.method == 'POST':
+#         form = AddToWishlistForm(request.POST)
+#         if form.is_valid():
+#             product_id = form.cleaned_data['product_id']
+#             product = get_object_or_404(Product, id=product_id)
+#             wishlist, _ = Wishlist.objects.get_or_create(user=request.user)
+#
+#             exists = WishlistItem.objects.filter(wishlist=wishlist, product=product).exists()
+#             if not exists:
+#                 WishlistItem.objects.create(wishlist=wishlist, product=product)
+#                 messages.success(request, _('محصول به لیست علاقه‌مندی‌ها اضافه شد.'))
+#
+#                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+#                     return JsonResponse({'status': 'success', 'action': 'added'})
+#             else:
+#                 messages.info(request, _('این محصول قبلاً در لیست علاقه‌مندی‌های شما وجود دارد.'))
+#                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+#                     return JsonResponse({'status': 'info', 'action': 'already_exists'})
+#
+#             return redirect(_get_safe_redirect(request, product.get_absolute_url()))
+#
+#     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+#         return JsonResponse({'status': 'error'}, status=400)
+#     return redirect('home')
+#
+#
+# @login_required
+# def remove_from_wishlist(request):
+#     if request.method == 'POST':
+#         form = RemoveFromWishlistForm(request.POST)
+#         if form.is_valid():
+#             product_id = form.cleaned_data['product_id']
+#             product = get_object_or_404(Product, id=product_id)
+#             wishlist = get_object_or_404(Wishlist, user=request.user)
+#
+#             deleted_count = WishlistItem.objects.filter(wishlist=wishlist, product=product).delete()[0]
+#             if deleted_count > 0:
+#                 messages.success(request, _('محصول از لیست علاقه‌مندی‌ها حذف شد.'))
+#
+#                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+#                     return JsonResponse({'status': 'success', 'action': 'removed'})
+#             else:
+#                 messages.info(request, _('این محصول در لیست علاقه‌مندی‌های شما وجود ندارد.'))
+#                 if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+#                     return JsonResponse({'status': 'info', 'action': 'not_found'})
+#
+#             return redirect(_get_safe_redirect(request, 'products:wishlist'))
+#
+#     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+#         return JsonResponse({'status': 'error'}, status=400)
+#     return redirect('products:wishlist')
+#
+#
+# from django.views.decorators.http import require_http_methods
+# from django.views.decorators.csrf import ensure_csrf_cookie
+

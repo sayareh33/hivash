@@ -13,6 +13,9 @@ from .forms import OrderForm, OrderAddressForm
 from .models import OrderItem, OrderAddress, Order, UserAddress
 
 from django import forms
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @login_required

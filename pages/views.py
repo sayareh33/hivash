@@ -4,6 +4,11 @@ from django.views.generic import TemplateView
 
 from products.models import Category, Product
 
+# pages/views.py
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .forms import ContactMessageForm
 
 class HomePageView(TemplateView):
     template_name = 'pages/home.html'
@@ -134,5 +139,160 @@ class AboutUsView(TemplateView):
     template_name = 'pages/aboutus.html'
 
 
-class ContactUsView(TemplateView):
-    template_name = 'pages/contactus.html'
+@login_required(login_url='accounts:login')
+def contactus_view(request):
+    if request.method == 'POST':
+        form = ContactMessageForm(request.POST)
+        if form.is_valid():
+            contact_message = form.save(commit=False)
+            contact_message.user = request.user
+            contact_message.save()
+            messages.success(request, 'پیام شما با موفقیت ارسال شد. سپاس از همراهی شما 🌱')
+            return redirect('pages:contactus')
+        else:
+            messages.error(request, 'لطفاً خطاهای فرم را برطرف کنید.')
+    else:
+        form = ContactMessageForm()
+
+    return render(request, 'pages/contactus.html', {'form': form})
+
+
+
+# class ContactView(LoginRequiredMixin, CreateView):
+#     model = ContactMessage
+#     form_class = ContactForm
+#     template_name = 'pages/contactus.html'
+#     success_url = reverse_lazy('pages:contactus')
+#     login_url = '/accounts/login/'  # Adjust to your login URL
+#
+#     def get_form_kwargs(self):
+#         kwargs = super().get_form_kwargs()
+#         kwargs['user'] = self.request.user
+#         return kwargs
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#
+#         # Get site settings
+#         try:
+#             site_settings = SiteSetting.objects.first()
+#         except SiteSetting.DoesNotExist:
+#             site_settings = SiteSetting.objects.create(
+#                 site_name="هیوا عشقال",
+#                 contact_email="info@hiva-eshghal.ir",
+#                 support_email="support@hiva-eshghal.ir",
+#                 phone_number="07134567890",
+#                 mobile_number="09384501026",
+#                 address="استان فارس، شهرستان قیر و کارزین، قیر، کوچه سه شهید",
+#                 sat_to_wed_hours="8:00 - 17:00",
+#                 thursday_hours="8:00 - 14:00",
+#                 friday_hours="تعطیل",
+#                 map_embed_url="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3456.789012345678!2d51.12345678901234!3d29.98765432109876!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjnCsDU5JzE1LjYiTiA1McKwMDcnMjguNiJF!5e0!3m2!1sen!2sir!4v1234567890123!5m2!1sen!2sir"
+#             )
+#
+#         context['site_settings'] = site_settings
+#         return context
+#
+#     def form_valid(self, form):
+#         # Get IP address
+#         x_forwarded_for = self.request.META.get('HTTP_X_FORWARDED_FOR')
+#         if x_forwarded_for:
+#             ip = x_forwarded_for.split(',')[0]
+#         else:
+#             ip = self.request.META.get('REMOTE_ADDR')
+#
+#         # Set the user and IP address
+#         form.instance.user = self.request.user
+#         form.instance.ip_address = ip
+#
+#         response = super().form_valid(form)
+#
+#         messages.success(
+#             self.request,
+#             _('پیام شما با موفقیت ارسال شد. در اسرع وقت با شما تماس خواهیم گرفت.')
+#         )
+#         return response
+#
+#     def form_invalid(self, form):
+#         messages.error(
+#             self.request,
+#             _('خطایی در ارسال پیام رخ داد. لطفاً اطلاعات را بررسی کرده و مجدداً تلاش کنید.')
+#         )
+#         return super().form_invalid(form)
+
+
+# Function-based view with authentication
+from django.contrib.auth.decorators import login_required
+
+#
+# @login_required
+# def contact_view(request):
+#     site_settings = SiteSetting.objects.first()
+#
+#     if not site_settings:
+#         site_settings = SiteSetting.objects.create(
+#             site_name="هیوا عشقال",
+#             contact_email="info@hiva-eshghal.ir",
+#             support_email="support@hiva-eshghal.ir",
+#             phone_number="07134567890",
+#             mobile_number="09384501026",
+#             address="استان فارس، شهرستان قیر و کارزین، قیر، کوچه سه شهید",
+#             sat_to_wed_hours="8:00 - 17:00",
+#             thursday_hours="8:00 - 14:00",
+#             friday_hours="تعطیل",
+#             map_embed_url="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3456.789012345678!2d51.12345678901234!3d29.98765432109876!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjnCsDU5JzE1LjYiTiA1McKwMDcrMjguNiJF!5e0!3m2!1sen!2sir!4v1234567890123!5m2!1sen!2sir"
+#         )
+#
+#     if request.method == 'POST':
+#         form = ContactForm(request.POST, user=request.user)
+#         if form.is_valid():
+#             # Get IP address
+#             x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+#             if x_forwarded_for:
+#                 ip = x_forwarded_for.split(',')[0]
+#             else:
+#                 ip = request.META.get('REMOTE_ADDR')
+#
+#             contact_message = form.save(commit=False)
+#             contact_message.user = request.user
+#             contact_message.ip_address = ip
+#             contact_message.save()
+#
+#             messages.success(
+#                 request,
+#                 _('پیام شما با موفقیت ارسال شد. در اسرع وقت با شما تماس خواهیم گرفت.')
+#             )
+#             return redirect('pages:contactus')
+#         else:
+#             messages.error(
+#                 request,
+#                 _('خطایی در ارسال پیام رخ داد. لطفاً اطلاعات را بررسی کرده و مجدداً تلاش کنید.')
+#             )
+#     else:
+#         form = ContactForm(user=request.user)
+#
+#     context = {
+#         'form': form,
+#         'site_settings': site_settings,
+#     }
+#
+#     return render(request, 'pages/contactus.html', context)
+
+
+
+# def contact_us(request):
+#     if request.method == 'POST':
+#         form = ContactUsForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, 'پیام شما با موفقیت ارسال شد.')
+#             return redirect('contact_us')
+#         else:
+#             messages.error(request, 'لطفا فرم را به درستی پر کنید.')
+#     else:
+#         form = ContactUsForm()
+#
+#     return render(request, 'contact/contact_us.html', {
+#         'form': form,
+#     })
+

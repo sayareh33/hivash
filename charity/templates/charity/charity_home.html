@@ -434,7 +434,7 @@
             <p class="text-muted small mb-0">{{ project.short_description }}</p>
             <div>
               <div class="progress my-3" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ project.progress }}">
-                <div class="progress-bar" style="width: {{ project.progress }}%;"></div>
+                <div class="progress-bar" style="width: {{ project.progress|default:0 }}%;"></div>
               </div>
               <div class="d-flex justify-content-between small text-muted">
                 <span>{{ project.current_amount|floatformat:0|intcomma }} تومان</span>
@@ -781,6 +781,16 @@
 </section>
 {% endif %}
 
+
+<section class="container my-5">
+  <div class="cta-banner text-center">
+    <h2 class="fw-bold mb-3">همین امروز به یک داستان تازه امید ببخشید</h2>
+    <p class="lead mb-4">حمایت شما، هر چقدر هم کوچک، می‌تواند زندگی‌ای را نجات دهد و آینده‌ای را بسازد.</p>
+    <a href="#donation-plans" class="btn-charity-light">همین حالا کمک کنید</a>
+  </div>
+</section>
+
+
 {% if faq_items %}
 <section class="container my-5">
   <div class="text-center mb-5">
@@ -797,15 +807,64 @@
     {% endfor %}
   </div>
 </section>
-{% endif %}
 
-<section class="container my-5">
-  <div class="cta-banner text-center">
-    <h2 class="fw-bold mb-3">همین امروز به یک داستان تازه امید ببخشید</h2>
-    <p class="lead mb-4">حمایت شما، هر چقدر هم کوچک، می‌تواند زندگی‌ای را نجات دهد و آینده‌ای را بسازد.</p>
-    <a href="#donation-plans" class="btn-charity-light">همین حالا کمک کنید</a>
+<!-- سکشن سوالات متداول -->
+<section class="faq-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">پرسش‌های متداول</span>
+      <h2 class="section-title">پاسخ به سوالات شما</h2>
+      <p class="section-subtitle">هر آنچه باید درباره خیریه هیوا بدانید</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>چگونه از صحت و سلامت مالی خیریه اطمینان حاصل کنم؟</span>
+            <i class="fas fa-chevron-down faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            <p>خیریه هیوا با شفافیت کامل مالی فعالیت می‌کند. تمامی گزارش‌های مالی به‌صورت ماهانه در سایت منتشر می‌شود و امکان رصد کامل وجوه از طریق پنل اختصاصی برای هر حامی فراهم شده است.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>آیا می‌توانم در اجرای خاصی مشارکت کنم؟</span>
+            <i class="fas fa-chevron-down faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            <p>بله، شما می‌توانید برای هر پروژه به‌صورت مجزا کمک کنید و گزارش اختصاصی همان پروژه را دریافت نمایید. همچنین امکان وقف و نذر برای اهداف خاص نیز وجود دارد.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>چگونه از وضعیت پروژه‌ای که در آن مشارکت کرده‌ام مطلع شوم؟</span>
+            <i class="fas fa-chevron-down faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            <p>پس از مشارکت، به پنل اختصاصی دسترسی پیدا می‌کنید که در آن تصاویر، ویدیوها و گزارش‌های پیشرفت پروژه به‌صورت منظم به‌روزرسانی می‌شود.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            <span>آیا کمک‌های غیرنقدی نیز پذیرفته می‌شود؟</span>
+            <i class="fas fa-chevron-down faq-icon"></i>
+          </div>
+          <div class="faq-answer">
+            <p>بله، ما کمک‌های غیرنقدی مانند پوشاک، مواد غذایی، لوازم التحریر و... را نیز می‌پذیریم. برای هماهنگی می‌توانید با واحد پشتیبانی تماس بگیرید.</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
+
+{% endif %}
+
 {% endblock %}
 
 {% block extra_js %}

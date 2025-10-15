@@ -8,7 +8,7 @@ from django.db.models.functions import TruncDate
 class VisitAdmin(admin.ModelAdmin):
     # ستون‌هایی که در لیست نمایش داده می‌شوند
     list_display = (
-        'timestamp',
+        'created_at',
         'user_display',
         'path',
         'method',
@@ -24,13 +24,13 @@ class VisitAdmin(admin.ModelAdmin):
         'country',
         'device',
         'browser',
-        'timestamp',
+        'created_at',
     )
 
     # فیلدهایی که قابل جستجو هستند
     search_fields = (
         'ip_address',
-        'user__username',
+        'user__phone',
         'path',
         'country',
         'city',
@@ -39,8 +39,8 @@ class VisitAdmin(admin.ModelAdmin):
     )
 
     # فیلد تاریخ برای ناوبری راحت‌تر
-    date_hierarchy = 'timestamp'
-    ordering = ('-timestamp',)
+    date_hierarchy = 'created_at'
+    ordering = ('-created_at',)
 
     # نمایش نمودار و آمار در بالای change_list
     change_list_template = 'admin/visits_change_list.html'
@@ -57,7 +57,7 @@ class VisitAdmin(admin.ModelAdmin):
         # آمار روزانه 7 روز گذشته
         stats = (
             Visit.objects
-            .annotate(date=TruncDate('timestamp'))
+            .annotate(date=TruncDate('created_at'))
             .values('date')
             .annotate(total=Count('id'))
             .order_by('-date')[:7]

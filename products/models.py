@@ -275,8 +275,10 @@ class Product(models.Model):
     def get_final_price(self, quantity=1):
         discount = self.get_best_discount(quantity)
         if discount:
+            quantity = max(quantity, 1)
             discount_amount = discount.calculate_discount_amount(self.unit_price, quantity)
-            final = Decimal(self.unit_price) - discount_amount
+            per_unit_discount = (discount_amount / Decimal(quantity)).quantize(Decimal('0.01'))
+            final = Decimal(self.unit_price) - per_unit_discount
             return max(Decimal('0.00'), final)
         return self.unit_price
 

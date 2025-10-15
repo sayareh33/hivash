@@ -136,14 +136,11 @@ class OTPVerificationForm(forms.Form):
     )
 
 
-from django import forms
-from .validators import validate_iranian_mobile
-
 
 class LoginForm(forms.Form):
     phone = forms.CharField(
-        max_length=15,
-        label='Ø´Ù…Ø§Ø±Ù‡ ØªÙ„ÙÙ† Ù‡Ù…Ø±Ø§Ù‡',
+        max_length=11,
+        label='شماره تلفن همراه',
         validators=[validate_iranian_mobile],
         widget=forms.TextInput(attrs={
             'class': 'form-control',
@@ -152,10 +149,10 @@ class LoginForm(forms.Form):
     )
 
     password = forms.CharField(
-        label='Ø±Ù…Ø² Ø¹Ø¨ÙˆØ±',
+        label='رمز عبور',
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Ø±Ù…Ø² Ø¹Ø¨ÙˆØ± Ø®ÙˆØ¯ Ø±Ø§ ÙˆØ§Ø±Ø¯ Ú©Ù†ÛŒØ¯'
+            'placeholder': 'رمز عبور خود را وارد کنید'
         })
     )
 
@@ -164,7 +161,12 @@ class LoginForm(forms.Form):
         label='Ù…Ø±Ø§ Ø¨Ù‡ Ø®Ø§Ø·Ø± Ø¨Ø³Ù¾Ø§Ø±',
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
-
+    def clean_phone(self):
+        phone = self.cleaned_data['phone']
+        try:
+            return validate_iranian_mobile(phone, return_format='database')
+        except ValidationError as e:
+            raise forms.ValidationError(e.messages)
 #
 # class ForgotPasswordForm(forms.Form):
 #     phone = forms.CharField(

@@ -1,66 +1,68 @@
+
 {% load static %}
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top"
      style="background: linear-gradient(135deg, #00ff7f, #fff200); z-index:1000;">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center brand-link" href="{% url 'pages:home' %}">
-            <span class="brand-title fw-bold">&#1607;&#1740;&#1608;&#1575;&#32;&#1588;&#1575;&#1662;</span>
-            <img src="{% static 'img/hiva.png' %}" alt="&#1604;&#1608;&#1711;&#1608;&#1740;&#32;&#1607;&#1740;&#1608;&#1575;&#32;&#1588;&#1575;&#1662;" class="brand-logo">
+            <span class="brand-title fw-bold">خانه</span>
+            <img src="{% static 'img/hiva.png' %}" alt="لوگوی خانه هیوا" class="brand-logo">
         </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
-                aria-controls="navbarContent" aria-expanded="false" aria-label="&#1576;&#1575;&#1586;&#32;&#1705;&#1585;&#1583;&#1606;&#32;&#1605;&#1606;&#1608;">
+                aria-controls="navbarContent" aria-expanded="false" aria-label="باز کردن منو">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarContent">
             <ul class="navbar-nav mb-2 mb-lg-0 main-menu">
-                <li class="nav-item"><a class="nav-link" href="{% url 'products:product_list' %}">&#1605;&#1581;&#1589;&#1608;&#1604;&#1575;&#1578;</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'articles:list' %}">&#1605;&#1602;&#1575;&#1604;&#1575;&#1578;</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'charity:home' %}">&#1582;&#1740;&#1585;&#1740;&#1607;&#32;&#1607;&#1740;&#1608;&#1575;</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'pages:aboutus' %}">&#1583;&#1585;&#1576;&#1575;&#1585;&#1607;&#32;&#1605;&#1575;</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'pages:contactus' %}">&#1578;&#1605;&#1575;&#1587;&#32;&#1576;&#1575;&#32;&#1605;&#1575;</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'products:product_list' %}">محصولات</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'articles:list' %}">مقالات</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'charity:home' %}">یاوران مهربان</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'pages:aboutus' %}">درباره ما</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'pages:contactus' %}">تماس با ما</a></li>
             </ul>
 
             <div class="navbar-tools d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2">
                 <div class="header-actions d-flex align-items-center gap-2">
-                    <a href="{% url 'products:wishlist' %}" class="btn toolbar-btn" aria-label="&#1593;&#1604;&#1575;&#1602;&#1607;&#8204;&#1605;&#1606;&#1583;&#1740;&#8204;&#1607;&#1575;">
+                    <a href="{% url 'products:wishlist' %}" class="btn toolbar-btn" aria-label="علاقه مندی ها">
                         <i class="bi bi-heart"></i>
                     </a>
-                    <a href="{% url 'carts:cart_detail' %}" class="btn toolbar-btn position-relative" aria-label="&#1587;&#1576;&#1583;&#32;&#1582;&#1585;&#1740;&#1583;">
+                    <a href="{% url 'carts:cart_detail' %}" class="btn toolbar-btn position-relative" aria-label="سبد خرید">
                         <i class="bi bi-cart3"></i>
                         <span class="navbar-cart-badge">{{ cart_count|default:0 }}</span>
                     </a>
                     <div class="dropdown user-menu">
                         <button class="btn toolbar-btn d-flex align-items-center justify-content-center dropdown-toggle"
                                 type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false"
-                                aria-label="&#1581;&#1587;&#1575;&#1576;&#32;&#1705;&#1575;&#1585;&#1576;&#1585;&#1740;">
+                                aria-label="حساب کاربری">
                             <i class="bi bi-person-circle"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2"
                             aria-labelledby="userMenuDropdown">
                             {% if user.is_authenticated %}
                                 <li class="dropdown-header text-muted small">
-                                    &#1587;&#1604;&#1575;&#1605; {{ user.get_full_name|default:user.phone }}
+                                    سلام {{ user.get_full_name|default:user.phone }}
                                 </li>
-                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">&#1662;&#1585;&#1608;&#1601;&#1575;&#1740;&#1604;&#32;&#1605;&#1606;</a></li>
-                                <li><a class="dropdown-item" href="{% url 'carts:cart_detail' %}">&#1587;&#1576;&#1583;&#32;&#1582;&#1585;&#1740;&#1583;</a></li>
-                                <li><a class="dropdown-item" href="{% url 'products:wishlist' %}">&#1593;&#1604;&#1575;&#1602;&#1607;&#8204;&#1605;&#1606;&#1583;&#1740;&#8204;&#1607;&#1575;</a></li>
+                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">پروفایل من</a></li>
+                                <li><a class="dropdown-item" href="{% url 'carts:cart_detail' %}">سبد خرید</a></li>
+                                <li><a class="dropdown-item" href="{% url 'products:wishlist' %}">علاقه مندی ها</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">&#1582;&#1585;&#1608;&#1580;</a></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">خروج</a></li>
                             {% else %}
-                                <li><a class="dropdown-item" href="{% url 'accounts:login' %}">&#1608;&#1585;&#1608;&#1583;</a></li>
-                                <li><a class="dropdown-item" href="{% url 'accounts:signup' %}">&#1579;&#1576;&#1578;&#8204;&#1606;&#1575;&#1605;</a></li>
+                                <li><a class="dropdown-item" href="{% url 'accounts:login' %}">ورود</a></li>
+                                <li><a class="dropdown-item" href="{% url 'accounts:signup' %}">ثبت نام</a></li>
                             {% endif %}
                         </ul>
                     </div>
                     <form action="{% url 'products:product_search' %}" method="get"
                           class="search-form d-flex align-items-center">
-                        <input class="form-control rounded-pill me-2 search-input" type="search" placeholder="&#1580;&#1587;&#1578;&#1580;&#1608;&#46;&#46;&#46;"
+                        <input class="form-control rounded-pill me-2 search-input" type="search" placeholder="جستجو .."
                                name="q" value="{{ query }}">
-                        <button class="btn search-btn" type="submit" aria-label="&#1580;&#1587;&#1578;&#1580;&#1608;"><i class="bi bi-search"></i></button>
+                        <button class="btn search-btn" type="submit" aria-label="جستجو"><i class="bi bi-search"></i></button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </nav>
+

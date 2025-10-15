@@ -1,7 +1,10 @@
 from django.db.models import Prefetch, Q, Sum
+from django.forms import models
 from django.http import Http404
 from django.views.generic import DetailView, ListView, TemplateView
-
+from django.db.models import Count, F, ExpressionWrapper, DurationField
+from django.utils import timezone
+from django.core.cache import cache
 from .forms import DonationForm
 from .models import (
     CharityProject,
@@ -90,7 +93,7 @@ class CharityHomeView(TemplateView):
                 'value': active_projects_queryset.count(),
                 'format': 'number',
                 'accent': 'teal',
-                'icon': 'bi-lightning-charge-fill',
+
             },
             {
                 'label': 'پروژه به سرانجام رسیده',
@@ -283,6 +286,33 @@ class CharityHomeView(TemplateView):
             }
         )
         return context
+
+    @property
+    def remaining_days(self):
+        if self.end_date:
+            remaining = self.end_date - timezone.now().date()
+            return max(remaining.days, 0)
+        return 0
+
+
+    @property
+    def progress(self):
+        if self.target_amount and self.current_amount:
+            return min(100, int((self.current_amount / self.target_amount) * 100))
+        return 0
+
+
+    @property
+    def current_amount(self):
+        # جمع کمک‌های پرداخت شده برای این پروژه
+        return self.donations.filter(
+            payment_status=PaymentStatus.PAID
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+
+    @property
+    def impact_summary(self):
+        return self.short_description  # یا فیلد جداگانه ایجاد کنید
 
 class ProjectListView(ListView):
     """Paginated list of projects filtered by status."""

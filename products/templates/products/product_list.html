@@ -1,84 +1,216 @@
 {% extends '_base.html' %}
 {% load static humanize number_filters %}
 
-{% block title %}Products{% if selected_category %} - {{ selected_category.title }}{% endif %}{% endblock %}
+{% block title %}محصولات{% if selected_category %} - {{ selected_category.title }}{% endif %}{% endblock %}
 
 {% block extra_css %}
 <style>
-    .catalog-section { margin-bottom: 56px; }
-    .section-heading {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        border-bottom: 2px solid rgba(0, 200, 150, 0.25);
-        padding-bottom: 12px;
-    }
-    .section-heading h2 { font-weight: 700; font-size: 1.5rem; margin: 0; }
+/* ==== بخش عمومی صفحه ==== */
+.container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
 
-    .card-product {
-        background: #fff;
-        border-radius: 16px;
-        overflow: hidden;
-        height: 100%;
-        transition: transform 0.35s ease, box-shadow 0.35s ease;
-        box-shadow: 0 12px 32px rgba(15, 52, 96, 0.1);
-        display: flex;
+/* ==== بخش دسته‌بندی و عنوان ==== */
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    border-bottom: 2px solid rgba(0, 200, 150, 0.25);
+    padding-bottom: 0.75rem;
+}
+.section-heading h2 {
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 0;
+}
+.filters a {
+    min-width: 120px;
+}
+
+/* ==== کارت محصول ==== */
+.card-product {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    box-shadow: 0 12px 32px rgba(15, 52, 96, 0.1);
+    position: relative; /* اضافه شده برای موقعیت‌دهی قلب */
+}
+.card-product:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 40px rgba(15, 52, 96, 0.15);
+}
+.card-product .thumb {
+    position: relative;
+    aspect-ratio: 1/1;
+    overflow: hidden;
+}
+.card-product .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.card-product .thumb .badge-discount {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(220, 53, 69, 0.9);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* 🔥 استایل قلب علاقه‌مندی در لیست محصولات */
+.wishlist-heart {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.wishlist-heart:hover {
+    background: white;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(220, 53, 69, 0.7);
+}
+
+.wishlist-heart .fas.fa-heart {
+    color: #dc3545;
+    text-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+.wishlist-heart .far.fa-heart {
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.wishlist-heart:hover .far.fa-heart {
+    color: #dc3545;
+    transform: scale(1.2);
+}
+
+/* انیمیشن ضربان قلب */
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.1); }
+    50% { transform: scale(1); }
+    75% { transform: scale(1.05); }
+}
+
+/* استایل برای حالت لودینگ */
+.wishlist-heart.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.wishlist-heart.loading .fa-heart {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.card-product .card-body {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1;
+}
+.card-product .card-body h3 {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+.card-product .card-body h3 a {
+    color: #1f2933;
+    text-decoration: none;
+}
+.card-product .card-body h3 a:hover {
+    color: #0a6efc;
+}
+.card-product .price {
+    font-weight: 700;
+    color: #0a6efc;
+}
+.card-product .price small {
+    font-size: 0.85rem;
+}
+
+/* ==== دکمه افزودن به سبد خرید با گرادینت و برق ==== */
+.btn-gradient-cart {
+    background: linear-gradient(135deg, #FFD700, #32CD32);
+    color: #1f2933;
+    border: none;
+    padding: 12px 0;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    width: 100%;
+    cursor: pointer;
+}
+.btn-gradient-cart:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.btn-gradient-cart .flash {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 50%;
+    height: 200%;
+    background: rgba(255,255,255,0.5);
+    transform: rotate(25deg) translateX(-100%);
+    pointer-events: none;
+}
+
+.btn-gradient-cart.clicked .flash {
+    animation: flashAnim 0.6s forwards;
+}
+
+@keyframes flashAnim {
+    0% { transform: rotate(25deg) translateX(-100%); opacity: 1; }
+    50% { transform: rotate(25deg) translateX(200%); opacity: 0.7; }
+    100% { transform: rotate(25deg) translateX(400%); opacity: 0; }
+}
+
+/* ریسپانسیو */
+@media (max-width: 768px) {
+    .section-heading {
         flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
     }
-    .card-product:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 18px 40px rgba(15, 52, 96, 0.15);
+
+    .wishlist-heart {
+        width: 36px;
+        height: 36px;
     }
-    .card-product .thumb {
-        position: relative;
-        aspect-ratio: 1/1;
-        overflow: hidden;
-    }
-    .card-product .thumb img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .card-product .thumb .badge-discount {
-        position: absolute;
-        top: 14px;
-        right: 14px;
-        background: rgba(220, 53, 69, 0.9);
-        color: #fff;
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-size: 0.78rem;
-        font-weight: 600;
-    }
-    .card-product .card-body {
-        padding: 18px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        flex-grow: 1;
-    }
-    .card-product .card-body h3 {
-        font-size: 1rem;
-        line-height: 1.6;
-        margin: 0;
-    }
-    .card-product .card-body h3 a {
-        color: #1f2933;
-        text-decoration: none;
-    }
-    .card-product .card-body h3 a:hover {
-        color: #0a6efc;
-    }
-    .card-product .price {
-        font-weight: 700;
-        color: #0a6efc;
-    }
-    .card-product .price small {
-        font-size: 0.85rem;
-    }
-    .card-product .btn { margin-top: auto; }
-    .filters button { min-width: 120px; }
+}
 </style>
 {% endblock %}
 
@@ -88,13 +220,13 @@
         <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
             <div>
                 <h1 class="h3 fw-bold mb-2">{{ selected_category.title }}</h1>
-                <p class="text-muted mb-0">???? ??????? ??? ???? ?? ????? ????? ???????.</p>
+                <p class="text-muted mb-0">محصولات موجود در این دسته‌بندی را مشاهده می‌کنید.</p>
             </div>
             <div class="filters d-flex gap-2 flex-wrap">
-                <a href="?category={{ selected_category.slug }}" class="btn btn-outline-secondary {% if not sort %}active{% endif %}">????????</a>
-                <a href="?category={{ selected_category.slug }}&sort=cheapest" class="btn btn-outline-secondary {% if sort == 'cheapest' %}active{% endif %}">??????????</a>
-                <a href="?category={{ selected_category.slug }}&sort=expensive" class="btn btn-outline-secondary {% if sort == 'expensive' %}active{% endif %}">?????????</a>
-                <a href="{% url 'products:product_list' %}" class="btn btn-light">?????? ?? ??? ???????</a>
+                <a href="?category={{ selected_category.slug }}" class="btn btn-outline-secondary {% if not sort %}active{% endif %}">مرتب‌سازی پیش‌فرض</a>
+                <a href="?category={{ selected_category.slug }}&sort=cheapest" class="btn btn-outline-secondary {% if sort == 'cheapest' %}active{% endif %}">ارزان‌ترین</a>
+                <a href="?category={{ selected_category.slug }}&sort=expensive" class="btn btn-outline-secondary {% if sort == 'expensive' %}active{% endif %}">گران‌ترین</a>
+                <a href="{% url 'products:product_list' %}" class="btn btn-light">بازگشت به همه محصولات</a>
             </div>
         </div>
 
@@ -107,12 +239,20 @@
                             {% if product.primary_image_url %}
                                 <img src="{{ product.primary_image_url }}" alt="{{ product.title }}">
                             {% else %}
-                                <img src="{% static 'img/products/default.jpg' %}" alt="Product image">
+                                <img src="{% static 'img/products/default.jpg' %}" alt="تصویر محصول">
                             {% endif %}
                         </a>
                         {% if product.has_active_discount %}
-                        <span class="badge-discount">Sale</span>
+                        <span class="badge-discount">فروش ویژه</span>
                         {% endif %}
+
+                        <!-- 🔥 قلب علاقه‌مندی -->
+                        <button class="wishlist-heart wishlist-toggle"
+                                data-product-id="{{ product.id }}"
+                                data-is-in-wishlist="{% if product.id in wishlist_product_ids %}true{% else %}false{% endif %}"
+                                data-csrf-token="{{ csrf_token }}">
+                            <i class="{% if product.id in wishlist_product_ids %}fas{% else %}far{% endif %} fa-heart"></i>
+                        </button>
                     </div>
                     <div class="card-body">
                         <h3><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>
@@ -131,8 +271,9 @@
                             {% csrf_token %}
                             <input type="hidden" name="quantity" value="1">
                             <input type="hidden" name="inplace" value="false">
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="bi bi-cart-plus me-2"></i> ?????? ?? ??? ????
+                            <button type="submit" class="btn-gradient-cart">
+                                <i class="bi bi-cart-plus me-2"></i> افزودن به سبد خرید
+                                <span class="flash"></span>
                             </button>
                         </form>
                     </div>
@@ -140,14 +281,15 @@
             </div>
             {% empty %}
             <div class="col-12">
-                <div class="alert alert-info">???? ?????? ?? ??? ???? ??? ???? ???.</div>
+                <div class="alert alert-info">محصولی در این دسته‌بندی یافت نشد.</div>
             </div>
             {% endfor %}
         </div>
     {% else %}
+        {% comment %} بخش دسته‌بندی‌های شاخص {% endcomment %}
         <div class="text-center mb-5">
-            <h1 class="h3 fw-bold">Products by category</h1>
-            <p class="text-muted">Each row shows four highlighted items. Use “view all” to jump into the full catalogue of that category.</p>
+            <h1 class="h3 fw-bold">محصولات بر اساس دسته‌بندی</h1>
+            <p class="text-muted">هر بخش چهار محصول شاخص را نمایش می‌دهد. برای مشاهده تمام محصولات هر دسته‌بندی از «مشاهده همه» استفاده کنید.</p>
         </div>
 
         {% for category in categories %}
@@ -155,7 +297,7 @@
             <div class="section-heading">
                 <h2>{{ category.title }}</h2>
                 <a class="btn btn-link" href="{% url 'products:product_list' %}?category={{ category.slug }}">
-                    View all {{ category.title }}
+                    مشاهده همه {{ category.title }}
                     <i class="bi bi-arrow-left-short"></i>
                 </a>
             </div>
@@ -168,12 +310,20 @@
                                 {% if product.primary_image_url %}
                                     <img src="{{ product.primary_image_url }}" alt="{{ product.title }}">
                                 {% else %}
-                                    <img src="{% static 'img/products/default.jpg' %}" alt="Product image">
+                                    <img src="{% static 'img/products/default.jpg' %}" alt="تصویر محصول">
                                 {% endif %}
                             </a>
                             {% if product.has_active_discount %}
-                            <span class="badge-discount">Sale</span>
+                            <span class="badge-discount">فروش ویژه</span>
                             {% endif %}
+
+                            <!-- 🔥 قلب علاقه‌مندی -->
+                            <button class="wishlist-heart wishlist-toggle"
+                                    data-product-id="{{ product.id }}"
+                                    data-is-in-wishlist="{% if product.id in wishlist_product_ids %}true{% else %}false{% endif %}"
+                                    data-csrf-token="{{ csrf_token }}">
+                                <i class="{% if product.id in wishlist_product_ids %}fas{% else %}far{% endif %} fa-heart"></i>
+                            </button>
                         </div>
                         <div class="card-body">
                             <h3><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>
@@ -192,8 +342,9 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="quantity" value="1">
                                 <input type="hidden" name="inplace" value="false">
-                                <button type="submit" class="btn btn-outline-primary w-100">
-                                    <i class="bi bi-cart-plus me-2"></i> ?????? ?? ??? ????
+                                <button type="submit" class="btn-gradient-cart">
+                                    <i class="bi bi-cart-plus me-2"></i> افزودن به سبد خرید
+                                    <span class="flash"></span>
                                 </button>
                             </form>
                         </div>
@@ -202,15 +353,160 @@
                 {% empty %}
                 <div class="col-12">
                     <div class="alert alert-light border text-center">
-                        ???? ????? ????? ???? ??? ???? ??? ???? ???.
+                        هنوز هیچ محصولی در این دسته‌بندی اضافه نشده است.
                     </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
         {% empty %}
-        <div class="alert alert-info text-center">?? ??? ???? ????????? ????? ???? ????? ???? ?????.</div>
+        <div class="alert alert-info text-center">هنوز هیچ دسته‌بندی محصولی ایجاد نشده است.</div>
         {% endfor %}
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// افکت برق هنگام کلیک روی هر دکمه سبد خرید
+document.querySelectorAll('.btn-gradient-cart').forEach(btn => {
+    btn.addEventListener('click', e => {
+        const flash = btn.querySelector('.flash');
+        btn.classList.remove('clicked');
+        void btn.offsetWidth;
+        btn.classList.add('clicked');
+    });
+});
+
+// 🔥 مدیریت علاقه‌مندی‌ها در لیست محصولات
+document.addEventListener('DOMContentLoaded', function() {
+    const wishlistToggles = document.querySelectorAll('.wishlist-toggle');
+
+    wishlistToggles.forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const productId = this.dataset.productId;
+            const isInWishlist = this.dataset.isInWishlist === 'true';
+            const csrfToken = this.dataset.csrfToken;
+
+            // استفاده از URL‌های AJAX
+            const url = isInWishlist ?
+                '/products/wishlist/ajax/remove/' :
+                '/products/wishlist/ajax/add/';
+
+            // حالت لودینگ
+            this.classList.add('loading');
+            const originalTransform = this.style.transform;
+            this.style.transform = 'scale(0.95)';
+
+            try {
+                const formData = new FormData();
+                formData.append('product_id', productId);
+                formData.append('csrfmiddlewaretoken', csrfToken);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                // مدیریت خطای 401 (لاگین نبودن کاربر)
+                if (response.status === 401) {
+                    const result = await response.json();
+                    if (confirm(result.message + '\n\nآیا می‌خواهید به صفحه ورود بروید؟')) {
+                        window.location.href = '{% url "accounts:login" %}?next=' + encodeURIComponent(window.location.pathname);
+                    }
+                    return;
+                }
+
+                // بررسی سایر خطاهای HTTP
+                if (!response.ok) {
+                    throw new Error(`خطای HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // مدیریت پاسخ موفق
+                if (data.status === 'success' || data.status === 'info') {
+                    let newState;
+                    if (data.action === 'added' || data.action === 'already_exists') {
+                        newState = true;
+                    } else if (data.action === 'removed' || data.action === 'not_found') {
+                        newState = false;
+                    } else {
+                        newState = data.in_wishlist !== undefined ? data.in_wishlist : !isInWishlist;
+                    }
+
+                    // بروزرسانی UI
+                    updateWishlistUI(this, newState);
+                    showToast(data.message, 'success');
+
+                } else if (data.status === 'error') {
+                    showToast(data.message, 'error');
+                }
+
+            } catch (error) {
+                console.error('خطای Wishlist:', error);
+                showToast('خطا در ارتباط با سرور', 'error');
+            } finally {
+                this.classList.remove('loading');
+                this.style.transform = originalTransform;
+            }
+        });
+    });
+
+    function updateWishlistUI(button, inWishlist) {
+        button.dataset.isInWishlist = inWishlist;
+
+        // بروزرسانی آیکون
+        const icons = button.querySelectorAll('i');
+        icons.forEach(icon => {
+            if (inWishlist) {
+                icon.className = 'fas fa-heart';
+                icon.style.animation = 'heartbeat 1.5s ease-in-out';
+            } else {
+                icon.className = 'far fa-heart';
+                icon.style.animation = '';
+            }
+        });
+
+        // افکت موفقیت
+        button.style.transform = 'scale(1.1)';
+        setTimeout(() => button.style.transform = '', 300);
+    }
+
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `position-fixed top-0 end-0 m-4 p-3 rounded shadow-lg border-0 text-white ${
+            type === 'success' ? 'bg-success' :
+            type === 'error' ? 'bg-danger' : 'bg-warning'
+        }`;
+        toast.style.zIndex = '9999';
+        toast.style.minWidth = '300px';
+        toast.style.opacity = '0';
+        toast.style.transition = 'all 0.3s ease';
+
+        toast.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+                <span>${message}</span>
+                <button type="button" class="btn-close btn-close-white"
+                        onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+
+        document.body.appendChild(toast);
+        setTimeout(() => toast.style.opacity = '1', 10);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+});
+</script>
 {% endblock %}

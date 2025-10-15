@@ -1,5 +1,6 @@
 from django.urls import path
-from accounts.views.authenticate import SignUpView, LoginView, VerifyOTPView, ResendOTPView, CustomLogoutView
+from accounts.views.authenticate import SignUpView, VerifyOTPView
+from accounts.views.login import LoginView, ResendOTPView, SimpleLogoutView
 from accounts.views.profile import profile_view, profile_edit
 
 app_name = 'accounts'
@@ -9,7 +10,7 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('verify_otp/', VerifyOTPView.as_view(), name='verify_otp'),
     path('resend-otp/', ResendOTPView.as_view(), name='resend_otp'),
-    path('logout/', CustomLogoutView.as_view(), name='logout'),
+    path('logout/', SimpleLogoutView.as_view(), name='logout'),
     path('profile/', profile_view, name='profile'),
     path('profile/edit/', profile_edit, name='profile_edit'),
 
